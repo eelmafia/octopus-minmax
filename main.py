@@ -10,8 +10,8 @@ from playwright.sync_api import sync_playwright
 
 import config
 
-gql_transport = None
-gql_client = None
+gql_transport: AIOHTTPTransport
+gql_client: Client
 opposite_tariff = {
     "AGILE": "GO",
     "GO": "AGILE"
@@ -184,24 +184,54 @@ def get_acc_info():
     return current_tariff, curr_stdn_charge, region_code, consumption
 
 
-def get_potential_tariff_rates(tariff, region_code):
-    all_products = rest_query(f"{config.BASE_URL}/products")
-    tariff_code = next(
-        product["code"] for product in all_products['results']
-        if product['display_name'] == ("Agile Octopus" if tariff == "AGILE" else "Octopus Go")
-        and product['direction'] == "IMPORT"
-        and product['brand'] == "OCTOPUS_ENERGY"
-    )
-    # Residential tariffs are always E-1R (i think, lol)
-    product_code = f"E-1R-{tariff_code}-{region_code}"
+def get_potential_tariff_rates(tariff_short_code, region_code):
+    all_products = rest_query(f"{config.BASE_URL}/products/?brand=OCTOPUS_ENERGY&is_business=false")
 
+    # Get the required tariff from the results
+    tariff_result = next((
+        product for product in all_products.get('results', [])
+        if product.get('display_name') == ("Agile Octopus" if tariff_short_code == "AGILE" else "Octopus Go")
+           and product.get('direction') == "IMPORT"
+    ), None)
+
+    if not tariff_result:
+        raise ValueError(f"Tariff not found for {tariff_short_code}")
+
+    # Use the self links to navigate to the tariff details
+    tariff_self_link = next((
+        item.get('href') for item in tariff_result.get('links', [])
+        if item.get('rel', '').lower() == 'self'
+    ), None)
+
+    if not tariff_self_link:
+        raise ValueError(f"Self link not found for tariff {tariff_result.get('code', 'Unknown')}.")
+
+    tariff_details = rest_query(tariff_self_link)
+
+    # Access the standing charge including VAT
+    region_tariffs = tariff_details.get('single_register_electricity_tariffs', {}).get(f'_{region_code}', {}).get('direct_debit_monthly', {})
+    standing_charge_inc_vat = region_tariffs.get('standing_charge_inc_vat')
+
+    if standing_charge_inc_vat is None:
+        raise ValueError(f"Standing charge including VAT not found for region {region_code}.")
+
+    # Find the link for standard unit rates
+    links = region_tariffs.get('links', [])
+    unit_rates_link = next((
+        item.get('href') for item in links
+        if item.get('rel', '').lower() == 'standard_unit_rates'
+    ), None)
+
+    if not unit_rates_link:
+        raise ValueError(f"Standard unit rates link not found for region: {region_code}")
+
+    # Get today's rates
     today = date.today()
     unit_rates = rest_query(
-        f"{config.BASE_URL}/products/{tariff_code}/electricity-tariffs/{product_code}/standard-unit-rates/?period_from={today}T00:00:00Z&period_to={today}T23:59:59Z")
-    standing_charge = rest_query(
-        f"{config.BASE_URL}/products/{tariff_code}/electricity-tariffs/{product_code}/standing-charges/")
+        f"{unit_rates_link}?period_from={today}T00:00:00Z&period_to={today}T23:59:59Z")
 
-    return standing_charge['results'][0]['value_inc_vat'], unit_rates['results']
+    return standing_charge_inc_vat, unit_rates.get('results', [])
+
 
 
 def rest_query(url):
@@ -288,7 +318,7 @@ def verify_new_agreement():
                       for agreement in result['account']['electricityAgreements']
                       if 'validFrom' in agreement)
 
-    # For some reason, sometimes the agreement has no end date so I'm not not sure if this bit is still relevant?
+    # For some reason, sometimes the agreement has no end date, so I'm not sure if this bit is still relevant?
     # valid_to = datetime.fromisoformat(result['account']['electricityAgreements'][0]['validTo']).date()
     # next_year = valid_from.replace(year=valid_from.year + 1)
     return valid_from == today
@@ -314,14 +344,16 @@ def compare_and_switch():
 
     total_potential_calculated = sum(period['calculated_cost'] for period in potential_costs) + potential_std_charge
     summary = "Total potential cost on {}: £{:.2f} vs your current cost on {}: £{:.2f}"
-    summary = summary.format(opposite_tariff[curr_tariff], total_potential_calculated / 100, curr_tariff, total_curr_cost / 100)
+    summary = summary.format(opposite_tariff[curr_tariff], total_potential_calculated / 100, curr_tariff,
+                             total_curr_cost / 100)
     # 2p buffer because cba
     if (total_potential_calculated + 2) < total_curr_cost:
-        switch_message = "{summary}\nInitiating Switch to {new_tariff}".format(summary=summary, new_tariff=opposite_tariff[curr_tariff])
+        switch_message = "{summary}\nInitiating Switch to {new_tariff}".format(summary=summary,
+                                                                               new_tariff=opposite_tariff[curr_tariff])
         send_notification(switch_message)
 
         if config.DRY_RUN:
-            dry_run_message ="DRY RUN: Not going through with switch today."
+            dry_run_message = "DRY RUN: Not going through with switch today."
             send_notification(dry_run_message)
             return None
 
