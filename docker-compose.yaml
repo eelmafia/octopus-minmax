@@ -11,7 +11,8 @@ services:
       - OCTOPUS_LOGIN_EMAIL=<your_email>
       - OCTOPUS_LOGIN_PASSWD=<your_password>
       - EXECUTION_TIME=23:00
-      - NOTIFICATION_URLS<your_apprise_notification_urls>
+      - NOTIFICATION_URLS=<your_apprise_notification_urls>
       - ONE_OFF=false
       - DRY_RUN=false
       - PYTHONUNBUFFERED=1
+      - TARIFFS=go,agile,flexible

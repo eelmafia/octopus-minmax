@@ -39,6 +39,7 @@ docker run -d \
   -e ONE_OFF=false \
   -e DRY_RUN=false \
   -e PYTHONUNBUFFERED=1 \
+  -e TARIFFS=go,agile,flexible \
   --restart unless-stopped \
   eelmafia/octopus-minmax-bot
 ```
@@ -47,16 +48,31 @@ or use the docker-compose.yaml **Don't forget to add your environment variables*
 Note : Remove the --restart unless line if you set the ONE_OFF variable or it will continuously run.
 
 #### Environment Variables
-| Variable               | Description                                                                                       |
-|------------------------|---------------------------------------------------------------------------------------------------|
-| `ACC_NUMBER`           | Your Octopus Energy account number.                                                               |
-| `API_KEY`              | API token for accessing your Octopus Energy account.                                              |
-| `OCTOPUS_LOGIN_EMAIL`  | The email associated with your Octopus Energy account.                                            |
-| `OCTOPUS_LOGIN_PASSWD` | The password for your Octopus Energy account.                                                     |
-| `EXECUTION_TIME`       | (Optional) The time (HH:MM) when the script should execute. Default is `23:00` (11 PM).           |
+| Variable               | Description                                                                                                                                                                                                             |
+|------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `ACC_NUMBER`           | Your Octopus Energy account number.                                                                                                                                                                                     |
+| `API_KEY`              | API token for accessing your Octopus Energy account.                                                                                                                                                                    |
+| `OCTOPUS_LOGIN_EMAIL`  | The email associated with your Octopus Energy account.                                                                                                                                                                  |
+| `OCTOPUS_LOGIN_PASSWD` | The password for your Octopus Energy account.                                                                                                                                                                           |
+| `TARIFFS`              | A list of tariffs to compare against. Default is go,agile,flexible                                                                                                                                                      | 
+| `EXECUTION_TIME`       | (Optional) The time (HH:MM) when the script should execute. Default is `23:00` (11 PM).                                                                                                                                 |
 | `NOTIFICATION_URLS`    | (Optional) A comma-separated list of [Apprise](https://github.com/caronc/apprise) notification URLs for sending logs and updates.  See [Apprise documentation](https://github.com/caronc/apprise/wiki) for URL formats. |
-| `ONE_OFF`              | (Optional) A flag for you to simply trigger an immediate execution instead of starting scheduling.|
-| `DRY_RUN`              | (optional) A flag to compare but not switch tariffs.                                              | 
+| `ONE_OFF`              | (Optional) A flag for you to simply trigger an immediate execution instead of starting scheduling.                                                                                                                      |
+| `DRY_RUN`              | (optional) A flag to compare but not switch tariffs.                                                                                                                                                                    |
+
+#### Supported Tariffs
+
+Below is a list of supported tariffs, their IDs (to use in environment variables), and whether they are switchable.
+
+**None switchable tariffs are use for PRICE COMPARISON ONLY**
+
+| Tariff Name      | Tariff ID | Switchable |
+|------------------|-----------|------------|
+| Flexible Octopus | flexible  | ❌          |
+| Agile Octopus    | agile     | ✅          |
+| Cosy Octopus     | cosy      | ✅          |
+| Octopus Go       | go        | ✅          |
+
 
 #### Setting up Apprise Notifications
 

@@ -11,6 +11,9 @@ OCTOPUS_LOGIN_EMAIL = os.getenv("OCTOPUS_LOGIN_EMAIL", "")
 OCTOPUS_LOGIN_PASSWD = os.getenv("OCTOPUS_LOGIN_PASSWD", "")
 EXECUTION_TIME = os.getenv("EXECUTION_TIME", "23:00")
 
+# List of tariff IDs to compare
+TARIFFS = os.getenv("TARIFFS", "go,agile,flexible")
+
 # Whether to just run immediately and exit
 ONE_OFF_RUN = os.getenv("ONE_OFF", "false") in ["true", "True", "1"]
 
