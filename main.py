@@ -170,7 +170,7 @@ def switch_tariff(target_tariff):
     with sync_playwright() as playwright:
         browser = None
         try:
-            browser = playwright.chromium.launch(
+            browser = playwright.firefox.launch(
                 headless=True)
         except Exception as e:
             print(e)  # Should print out if its not working
