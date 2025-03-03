@@ -181,11 +181,11 @@ def switch_tariff(target_tariff):
         page.wait_for_timeout(10000)
         print("Octopus Energy website loaded")
         page.get_by_label("Log in to my account").click()
-        page.screenshot(path="screenshot2.png")
         page.wait_for_timeout(10000)
-        page.screenshot(path="screenshot3.png")
+        page.screenshot(path="screenshot2.png")
         page.get_by_placeholder("Email address").click()
         page.wait_for_timeout(10000)
+        page.screenshot(path="screenshot3.png")
         # replace w env
         page.screenshot(path="screenshot4.png")
         page.get_by_placeholder("Email address").fill(config.OCTOPUS_LOGIN_EMAIL)
