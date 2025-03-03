@@ -205,7 +205,7 @@ def switch_tariff(target_tariff):
         page.wait_for_timeout(10000)
         page.screenshot(path="screenshot8.png")
         print("Tariff switch page loaded")
-        page.locator("section").filter(has_text="Already have a SMETS2 or “").get_by_role("button").click()
+        page.locator("section").filter(has_text="Already have a SMETS2 or “").get_by_role("button") #no click
         page.wait_for_timeout(10000)
         page.screenshot(path="screenshot9.png")
         # check if url has success
