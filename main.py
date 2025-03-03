@@ -201,28 +201,29 @@ def switch_tariff(target_tariff):
     with sync_playwright() as playwright:
         browser = None
         try:
-            browser = playwright.chromium.launch(
+            browser = playwright.firefox.launch(
                 headless=True)
         except Exception as e:
             print(e)  # Should print out if it's not working
         context = browser.new_context(viewport={"width": 1920, "height": 1080})
         page = context.new_page()
+        page.set_default_timeout(300_000) #5 minutes 
         page.goto("https://octopus.energy/")
-        page.wait_for_timeout(1000)
+        page.wait_for_timeout(5000)
         print("Octopus Energy website loaded")
         page.get_by_label("Log in to my account").click()
-        page.wait_for_timeout(1000)
+        page.wait_for_timeout(5000)
         page.get_by_placeholder("Email address").click()
-        page.wait_for_timeout(1000)
+        page.wait_for_timeout(5000)
         # replace w env
         page.get_by_placeholder("Email address").fill(config.OCTOPUS_LOGIN_EMAIL)
-        page.wait_for_timeout(1000)
+        page.wait_for_timeout(5000)
         page.get_by_placeholder("Email address").press("Tab")
-        page.wait_for_timeout(1000)
+        page.wait_for_timeout(5000)
         page.get_by_placeholder("Password").fill(config.OCTOPUS_LOGIN_PASSWD)
-        page.wait_for_timeout(1000)
+        page.wait_for_timeout(5000)
         page.get_by_placeholder("Password").press("Enter")
-        page.wait_for_timeout(1000)
+        page.wait_for_timeout(5000)
         print("Login details entered")
         # replace with env
         page.goto(f"https://octopus.energy/smart/{target_tariff.lower()}/sign-up/?accountNumber={config.ACC_NUMBER}")
