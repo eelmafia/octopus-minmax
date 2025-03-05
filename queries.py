@@ -19,13 +19,11 @@ accept_terms_query = """mutation {{
 }}"""
 
 get_terms_version_query = """query {{
-    termsAndConditionsForProduct(productCode: "{product_code}") {{
-        name
-        pdfUrl
-        version
-        effectiveFrom
-    }}
-}}"""
+          termsAndConditionsForProduct(productCode: "{product_code}") {{
+                name
+                version
+                }}
+            }}"""
 
 consumption_query = """query {{
     smartMeterTelemetry(
@@ -83,6 +81,23 @@ enrolment_query = """query {{
         status
         updatedAt
       }}
+    }}
+  }}
+}}"""
+
+switch_query = """mutation {{
+  startOnboardingProcess(input: {{
+    accountNumber: "{account_number}",
+    mpan: "{mpan}",
+    productCode: "{product_code}",
+    targetAgreementChangeDate: "{change_date}"
+  }})
+  {{
+    onboardingProcess {{
+      id
+    }}
+    productEnrolment {{
+      id
     }}
   }}
 }}"""

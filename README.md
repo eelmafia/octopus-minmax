@@ -10,7 +10,6 @@ I created this because I've been a long-time Agile customer who got tired of the
 I personally have this running automatically every day at 11 PM inside a Raspberry Pi Docker container, but you can run it wherever you want.  It sends notifications and updates to a variety of services via [Apprise](https://github.com/caronc/apprise), but that's not required for it to work.
 
 ## How to Use
-**Note**: This requires your email and password when using Playwright to log into your account. None of your data goes anywhere except to Octopus Energy.
 
 ### Requirements
 - An Octopus Energy Account  
