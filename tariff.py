@@ -33,6 +33,6 @@ TARIFFS = [
     Tariff("go", "Octopus Go", "Octopus Go", r"-go-", "go", True), # Octopus Go
     Tariff("agile", "Agile Octopus", "Agile Octopus", r"-agile-", "agile", True), # Octopus Agile
     Tariff("cosy", "Cosy Octopus", "Cosy Octopus", r"-cosy-", r"cosy-octopus", True), # Octopus Cosy
-    Tariff("IOG", "Intelligent Octopus Go", "Intelligent Octopus Go", r"-intelli-", "intelligent", True), # Intelligent Octopus Go
+    Tariff("iog", "Intelligent Octopus Go", "Intelligent Octopus Go", r"-intelli-", "intelligent", True), # Intelligent Octopus Go
     Tariff("flexible", "Flexible Octopus", "Flexible Octopus", r"(?<!go-)(?<!intelli-)var", "", False), # Flexible Octopus
 ]
