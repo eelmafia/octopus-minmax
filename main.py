@@ -329,7 +329,8 @@ def compare_and_switch():
             if verified:
                 send_notification("Verified new agreement successfully. Process finished.")
             else:
-                send_notification("Unable to verify new agreement after retry. Please check your account and emails.")
+                send_notification(f"Unable to verify new agreement after retry. Please check your account and emails.\n" \
+                 f"https://octopus.energy/dashboard/new/accounts/{config.ACC_NUMBER}/messages")
     else:
         send_notification(f"{summary}\nNot switching today.")
 

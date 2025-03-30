@@ -17,7 +17,7 @@ I personally have this running automatically every day at 11 PM inside a Raspber
   - Get your API key [here](https://octopus.energy/dashboard/new/accounts/personal-details/api-access)
 - A smart meter
 - Be on Octopus Agile or Octopus Go (More options can be added in the future)
-- An Octopus Home Mini for real-time usage (**Important**)
+- An Octopus Home Mini for real-time usage (**Important**). Get one for free [here](https://octopus.energy/blog/octopus-home-mini/).
 
 ### Running Manually
 1. Install the Python requirements.

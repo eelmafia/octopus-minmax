@@ -6,6 +6,7 @@ services:
     image: eelmafia/octopus-minmax-bot
     restart: unless-stopped
     environment:
+      - TZ=Europe/London
       - ACC_NUMBER=<your_account_number>
       - API_KEY=<your_api_key>
       - EXECUTION_TIME=23:00

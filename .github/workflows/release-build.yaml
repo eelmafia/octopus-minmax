@@ -8,11 +8,23 @@ on:
 jobs:
   docker-build:
     runs-on: ubuntu-latest
-
     steps:
       # Check out the code
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      # Update version in config.py
+      - name: Update version in config.py
+        run: |
+          # Extract version from tag
+          VERSION="${{ github.event.release.tag_name }}"
+          
+          # Update the BOT_VERSION in config.py (this change won't be committed)
+          sed -i 's/BOT_VERSION = "v\.local"/BOT_VERSION = "'"$VERSION"'"/' config.py
+          
+          # Show the change for debugging
+          echo "Updated config.py with version $VERSION"
+          grep BOT_VERSION config.py
 
       # Log in to Docker Hub
       - name: Log in to Docker Hub
