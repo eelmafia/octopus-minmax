@@ -68,28 +68,46 @@ def get_acc_info() -> AccountInfo:
     query = gql(account_query.format(acc_number=config.ACC_NUMBER))
     result = gql_client.execute(query)
 
-    tariff_code = next(agreement['tariff']['tariffCode']
-                       for agreement in result['account']['electricityAgreements']
-                       if 'tariffCode' in agreement['tariff'])
-    product_code = next(agreement['tariff']['productCode']
-                        for agreement in result['account']['electricityAgreements']
-                        if 'productCode' in agreement['tariff'])
-    region_code = tariff_code[-1]
-    device_id = next(device['deviceId']
-                     for agreement in result['account']['electricityAgreements']
-                     for meter in agreement['meterPoint']['meters']
-                     for device in meter['smartDevices']
-                     if 'deviceId' in device)
-    curr_stdn_charge = next(agreement['tariff']['standingCharge']
-                            for agreement in result['account']['electricityAgreements']
-                            if 'standingCharge' in agreement['tariff'])
-    mpan = None
+    import_agreement = None
     for agreement in result.get("account", {}).get("electricityAgreements", []):
         meter_point = agreement.get("meterPoint", {})
-        if meter_point.get("direction") == "IMPORT" and meter_point.get("mpan"):
-            mpan = meter_point.get("mpan")
+        if meter_point.get("direction") == "IMPORT":
+            import_agreement = agreement
             break
+    
+    if not import_agreement:
+        raise Exception("ERROR: No IMPORT meter point found in account data")
 
+    tariff = import_agreement.get("tariff")
+    if not tariff:
+        raise Exception("ERROR: No tariff information found for the IMPORT meter")
+    
+    tariff_code = tariff.get("tariffCode")
+    if not tariff_code:
+        raise Exception("ERROR: No tariff code found for the IMPORT  tariff")
+    
+    curr_stdn_charge = tariff.get("standingCharge")
+    if not curr_stdn_charge:
+        raise Exception("ERROR: No standing charge found for the IMPORT meter tariff")
+    
+    region_code = tariff_code[-1]
+    mpan = import_agreement.get("meterPoint", {}).get("mpan")
+    if not mpan:
+        raise Exception("ERROR: No MPAN found for the IMPORT meter")
+
+    device_id = None
+    meter_point = import_agreement.get("meterPoint", {})
+    for meter in meter_point.get("meters", []):
+        for device in meter.get("smartDevices", []):
+            if "deviceId" in device:
+                device_id = device["deviceId"]
+                break
+        if device_id:
+            break
+    
+    if not device_id:
+        raise Exception("ERROR: No device ID found for the IMPORT meter")
+    
     matching_tariff = next((tariff for tariff in tariffs if tariff.is_tariff(tariff_code)), None)
     if matching_tariff is None:
         raise Exception(f"ERROR: Found no supported tariff for {tariff_code}")
