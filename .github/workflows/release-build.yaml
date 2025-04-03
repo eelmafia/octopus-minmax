@@ -52,3 +52,40 @@ jobs:
           tags: |
             ${{ env.DOCKER_IMAGE }}:latest
             ${{ env.DOCKER_IMAGE }}:${{ github.event.release.tag_name }}
+  update-addon:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Step 2: Get the version tag from the release and set it as an environment variable
+      - name: Get version tag from the release
+        run: |
+          echo "VERSION=${GITHUB_REF##*/}" >> $GITHUB_ENV
+
+      # Step 3: Update version in config.yaml
+      - name: Update version in config.yaml
+        run: |
+          sed -i "s/version: .*/version: ${{ env.VERSION }}/" octopus_minmax_bot_addon/config.yaml
+
+      # Step 4: Copy README.md to octopus_minmax_bot_addon
+      - name: Copy README.md to octopus_minmax_bot_addon
+        run: cp README.md octopus_minmax_bot_addon/README.md
+
+      # Step 5: Add release notes to CHANGELOG.md
+      - name: Add release notes to CHANGELOG.md
+        run: |
+          RELEASE_NOTES=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ env.VERSION }}" | jq -r '.body')
+          RELEASE_TITLE=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ env.VERSION }}" | jq -r '.name')
+          echo -e "## ${{ env.VERSION }} - ${RELEASE_TITLE}\n${RELEASE_NOTES}\n" | cat - octopus_minmax_bot_addon/CHANGELOG.md > temp && mv temp octopus_minmax_bot_addon/CHANGELOG.md
+
+      # Step 6: Create Pull Request
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: "Update Addon Configuration to ${{ env.VERSION }}"
+          body: "This PR updates the addon configuration to the tagged release version and includes changes to README and CHANGELOG."
+          base: main
+          branch: update-addon-config-${{ env.VERSION }}
+          token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,33 @@
+---
+name: Octopus MinMax Bot
+image: eelmafia/octopus-minmax-bot
+url: https://github.com/eelmafia/octopus-minmax
+version: v0.7.2
+slug: octopus_minmax_bot
+startup: application
+init: false
+legacy: true
+description: A bot to automatically compare and switch smart electricity tariffs on Octopus Energy
+arch:
+  - armhf
+  - armv7
+  - amd64
+  - aarch64
+options:
+  API_KEY: "API KEY HERE"
+  ACC_NUMBER: "ACC NUMBER HERE"
+  EXECUTION_TIME: "23:00"
+  ONE_OFF: false
+  DRY_RUN: false
+  NOTIFICATION_URLS: ""
+  TARIFFS: "agile,go,flexible"
+  TZ: "Europe/London"
+schema:
+  API_KEY: str
+  ACC_NUMBER: str
+  EXECUTION_TIME: str
+  ONE_OFF: bool
+  DRY_RUN: bool
+  NOTIFICATION_URLS: str
+  TARIFFS: str
+  TZ: str
