@@ -2,7 +2,8 @@ import time
 from datetime import datetime
 import random
 import config
-from main import run_tariff_compare, send_notification
+from main import run_tariff_compare
+from notification import send_notification
 
 # Track last execution date to ensure we only run once per day
 last_execution_date = None
@@ -11,7 +12,7 @@ if config.ONE_OFF_RUN:
     send_notification(message=f"Octobot {config.BOT_VERSION} on. Running a one off comparison.")
     run_tariff_compare()
 else:
-    send_notification(message=f"Welcome to Octopus MinMax Bot. I will run your comparisons at {config.EXECUTION_TIME}")
+    send_notification(message=f"Welcome to Octobot {config.BOT_VERSION}. I will run your comparisons at {config.EXECUTION_TIME}")
 
     while True:
         now = datetime.now()
