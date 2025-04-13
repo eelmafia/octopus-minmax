@@ -3,12 +3,12 @@ import traceback
 from datetime import date, datetime
 
 import requests
-from apprise import Apprise
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
 
 import config
 from account_info import AccountInfo
+from notification import send_notification, send_batch_notification
 from queries import *
 from tariff import TARIFFS
 
@@ -17,31 +17,6 @@ gql_client: Client
 
 tariffs = []
 
-
-def send_notification(message, title="", error=False):
-    """Sends a notification using Apprise.
-
-    Args:
-        message (str): The message to send.
-        title (str, optional): The title of the notification.
-        error (bool, optional): Whether the message is a stack trace. Defaults to False.
-    """
-    print(message)
-
-    apprise = Apprise()
-
-    if config.NOTIFICATION_URLS:
-        for url in config.NOTIFICATION_URLS.split(','):
-            apprise.add(url.strip())
-
-    if not apprise:
-        print("No notification services configured. Check config.NOTIFICATION_URLS.")
-        return
-
-    if error:
-        message = f"```py\n{message}\n```"
-
-    apprise.notify(body=message, title=title)
 
 # The version of the terms and conditions is required to accept the new tariff
 def get_terms_version(product_code):
@@ -383,5 +358,8 @@ def run_tariff_compare():
             compare_and_switch()
         else:
             raise Exception("ERROR: setup_gql has failed")
-    except Exception:
+    except:
         send_notification(message=traceback.format_exc(), title="Octobot Error", error=True)
+    finally:
+        if config.BATCH_NOTIFICATIONS:
+            send_batch_notification()
