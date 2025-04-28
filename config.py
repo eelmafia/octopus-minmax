@@ -20,3 +20,6 @@ ONE_OFF_RUN = os.getenv("ONE_OFF", "false") in ["true", "True", "1"]
 
 # Whether to notify the user of a switch but not actually switch
 DRY_RUN = os.getenv("DRY_RUN", "false") in ["true", "True", "1"]
+
+# Sentry DSN for error tracking
+SENTRY_DSN = os.getenv("SENTRY_DSN", "")
