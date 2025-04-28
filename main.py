@@ -6,6 +6,7 @@ import requests
 from apprise import Apprise
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
+from sentry_sdk import capture_exception
 
 import config
 from account_info import AccountInfo
@@ -385,3 +386,4 @@ def run_tariff_compare():
             raise Exception("ERROR: setup_gql has failed")
     except Exception:
         send_notification(message=traceback.format_exc(), title="Octobot Error", error=True)
+        capture_exception()

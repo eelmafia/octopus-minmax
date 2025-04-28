@@ -14,3 +14,4 @@ services:
       - ONE_OFF=false
       - DRY_RUN=false
       - TARIFFS=go,agile,flexible
+      - SENTRY_DSN=<your_sentry_dsn>
