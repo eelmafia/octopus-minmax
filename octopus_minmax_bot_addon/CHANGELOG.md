@@ -1,3 +1,11 @@
+## v0.8.1 - v0.8.1
+## What's Changed
+* Replace gql with requests by @eelmafia in https://github.com/eelmafia/octopus-minmax/pull/88
+
+## New Contributors
+
+**Full Changelog**: https://github.com/eelmafia/octopus-minmax/compare/v0.8.0...v0.8.1
+
 ## v0.8.0 - v0.8.0
 ## What's Changed
 * Update README.md by @adyoull in https://github.com/eelmafia/octopus-minmax/pull/75
