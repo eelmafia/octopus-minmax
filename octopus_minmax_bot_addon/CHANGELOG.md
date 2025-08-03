@@ -1,3 +1,10 @@
+## v0.8.2 - v0.8.2
+## What's Changed
+* Update tariff.py by @adyoull in https://github.com/eelmafia/octopus-minmax/pull/99
+
+
+**Full Changelog**: https://github.com/eelmafia/octopus-minmax/compare/v0.8.1...v0.8.2
+
 ## v0.8.1 - v0.8.1
 ## What's Changed
 * Replace gql with requests by @eelmafia in https://github.com/eelmafia/octopus-minmax/pull/88
