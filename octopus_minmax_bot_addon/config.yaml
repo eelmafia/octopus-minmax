@@ -2,7 +2,7 @@
 name: Octopus MinMax Bot
 image: eelmafia/octopus-minmax-bot
 url: https://github.com/eelmafia/octopus-minmax
-version: v0.8.2
+version: v0.8.3
 slug: octopus_minmax_bot
 startup: application
 init: false
@@ -17,6 +17,7 @@ options:
   API_KEY: "API KEY HERE"
   ACC_NUMBER: "ACC NUMBER HERE"
   EXECUTION_TIME: "23:00"
+  SWITCH_THRESHOLD: 2
   ONE_OFF: false
   DRY_RUN: false
   NOTIFICATION_URLS: ""
@@ -27,6 +28,7 @@ schema:
   API_KEY: str
   ACC_NUMBER: str
   EXECUTION_TIME: str
+  SWITCH_THRESHOLD: float
   ONE_OFF: bool
   DRY_RUN: bool
   NOTIFICATION_URLS: str
