@@ -260,8 +260,8 @@ def compare_and_switch():
 
     savings = curr_cost - cheapest_cost
 
-    # 2p buffer because cba
-    if savings > 2:
+    # Only switch if the savings are greater than or equal to the SWITCH_THRESHOLD parameter.
+    if savings >= config.SWITCH_THRESHOLD:
         switch_message = f"{summary}\nInitiating Switch to {cheapest_tariff.display_name}"
         send_notification(switch_message)
 

@@ -9,6 +9,9 @@ configuration:
   EXECUTION_TIME:
     name: Execution Time
     description: When not One Off. This is the time to execute comparison.
+  SWITCH_THRESHOLD:
+    name: Switch Threshold
+    description: A value (in pence) which the saving must be before the switch occurs. Default is 2 (2p).
   API_KEY:
     name: API Key
     description: Octopus API Key

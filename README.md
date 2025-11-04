@@ -47,6 +47,7 @@ docker run -d \
   -e ACC_NUMBER="<your_account_number>" \
   -e API_KEY="<your_api_key>" \
   -e EXECUTION_TIME="23:00" \
+  -e SWITCH_THRESHOLD=2 \
   -e NOTIFICATION_URLS="<apprise_notification_urls>" \
   -e ONE_OFF=false \
   -e DRY_RUN=false \
@@ -67,6 +68,7 @@ Note : Remove the --restart unless line if you set the ONE_OFF variable or it wi
 | `API_KEY`                   | API token for accessing your Octopus Energy account.                                                                                                                                                                    |
 | `TARIFFS`                   | A list of tariffs to compare against. Default is go,agile,flexible                                                                                                                                                      | 
 | `EXECUTION_TIME`            | (Optional) The time (HH:MM) when the script should execute. Default is `23:00` (11 PM).                                                                                                                                 |
+| `SWITCH_THRESHOLD`          | A value (in pence) which the saving must be before the switch occurs. Default is `2` (2p). |
 | `NOTIFICATION_URLS`         | (Optional) A comma-separated list of [Apprise](https://github.com/caronc/apprise) notification URLs for sending logs and updates.  See [Apprise documentation](https://github.com/caronc/apprise/wiki) for URL formats. |
 | `ONE_OFF`                   | (Optional) A flag for you to simply trigger an immediate execution instead of starting scheduling.                                                                                                                      |
 | `DRY_RUN`                   | (optional) A flag to compare but not switch tariffs.                                                                                                                                                                    |
