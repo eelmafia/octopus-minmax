@@ -1,3 +1,12 @@
+## v0.8.3 - v0.8.3
+## What's Changed
+* Add config entry/environment variable for switch threshold, defaults to 2p by @DJBenson in https://github.com/eelmafia/octopus-minmax/pull/111
+
+## New Contributors
+* @DJBenson made their first contribution in https://github.com/eelmafia/octopus-minmax/pull/111
+
+**Full Changelog**: https://github.com/eelmafia/octopus-minmax/compare/v0.8.2...v0.8.3
+
 ## v0.8.2 - v0.8.2
 ## What's Changed
 * Update tariff.py by @adyoull in https://github.com/eelmafia/octopus-minmax/pull/99
