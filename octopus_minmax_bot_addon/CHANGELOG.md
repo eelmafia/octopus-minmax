@@ -1,3 +1,11 @@
+## v0.8.4 - v0.8.4
+## What's Changed
+* Update Addon Configuration to v0.8.3 by @github-actions[bot] in https://github.com/eelmafia/octopus-minmax/pull/112
+* Fix switch threshold type by @eelmafia in https://github.com/eelmafia/octopus-minmax/pull/115
+
+
+**Full Changelog**: https://github.com/eelmafia/octopus-minmax/compare/v0.8.3...v0.8.4
+
 ## v0.8.3 - v0.8.3
 ## What's Changed
 * Add config entry/environment variable for switch threshold, defaults to 2p by @DJBenson in https://github.com/eelmafia/octopus-minmax/pull/111
