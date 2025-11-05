@@ -16,7 +16,7 @@ BATCH_NOTIFICATIONS = os.getenv("BATCH_NOTIFICATIONS", "false") in ["true", "Tru
 EXECUTION_TIME = os.getenv("EXECUTION_TIME", "23:00")
 
 # A threshold (in pence) over which the difference between the tariffs must be before the switch happens.
-SWITCH_THRESHOLD = os.getenv("SWITCH_THRESHOLD", 2)
+SWITCH_THRESHOLD = int(os.getenv("SWITCH_THRESHOLD", 2))
 
 # List of tariff IDs to compare
 TARIFFS = os.getenv("TARIFFS", "go,agile,flexible")
