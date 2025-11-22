@@ -1,3 +1,10 @@
+## v0.8.5 - v0.8.5
+## What's Changed
+* Improve cosy regex to avoid fixed tariff by @eelmafia in https://github.com/eelmafia/octopus-minmax/pull/119
+
+
+**Full Changelog**: https://github.com/eelmafia/octopus-minmax/compare/v0.8.4...v0.8.5
+
 ## v0.8.4 - v0.8.4
 ## What's Changed
 * Update Addon Configuration to v0.8.3 by @github-actions[bot] in https://github.com/eelmafia/octopus-minmax/pull/112
