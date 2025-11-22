@@ -301,8 +301,13 @@ def compare_and_switch():
                 send_notification(f"Unable to verify new agreement after retry. Please check your account and emails.\n" \
                  f"https://octopus.energy/dashboard/new/accounts/{config.ACC_NUMBER}/messages")
     else:
-        send_notification(f"{summary}\nNot switching today.")
-
+        send_notification(
+            (f"{summary}\n" if summary else "") +
+            f"Not switching today — savings (£{savings / 100:.2f}) below threshold "
+            f"of £{config.SWITCH_THRESHOLD / 100:.2f}.\n"
+            f"Cheapest tariff: {cheapest_tariff.display_name} "
+            f"(£{cheapest_cost / 100:.2f} vs £{curr_cost / 100:.2f})"
+        )
 
 def load_tariffs_from_ids(tariff_ids: str):
     global tariffs
