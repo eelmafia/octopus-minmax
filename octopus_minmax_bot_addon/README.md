@@ -9,6 +9,14 @@ I created this because I've been a long-time Agile customer who got tired of the
 
 I personally have this running automatically every day at 11 PM inside a Raspberry Pi Docker container, but you can run it wherever you want.  It sends notifications and updates to a variety of services via [Apprise](https://github.com/caronc/apprise), but that's not required for it to work.
 
+### Operating Modes
+
+The bot supports two operating modes:
+
+1. **Retrospective Mode (Default)**: Compares tariffs based on actual usage from the current day and switches if a better tariff is found.
+
+2. **Predictive Mode**: Designed for battery optimization, this mode looks ahead at tomorrow's rates and makes a decision in advance. It's ideal for users with battery storage systems who want to optimise charging based on predicted rates. The bot makes a decision at a specified time (default 17:00) and executes the switch at midnight (default 00:01).
+
 ## How to Use
 
 ### Requirements
@@ -84,7 +92,6 @@ Below is a list of supported tariffs, their IDs (to use in environment variables
 |------------------|-----------|------------|
 | Flexible Octopus | flexible  | ❌          |
 | Agile Octopus    | agile     | ✅          |
-| Cosy Octopus     | cosy      | ✅          |
 | Octopus Go       | go        | ✅          |
 
 

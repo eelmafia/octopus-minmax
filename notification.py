@@ -26,12 +26,18 @@ def send_notification(message, title="", error=False, batchable=True):
         error (bool, optional): Whether the message is a stack trace. Defaults to False.
         batchable (bool, optional): Whether the message can be batched.
     """
-    print(message)
+    # Always print to console
+    if config.DEBUG:
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"[{timestamp}] {message}")
+    else:
+        print(message)
 
     apprise = get_apprise()
 
     if not apprise:
-        print("No notification services configured. Check config.NOTIFICATION_URLS.")
+        if config.DEBUG:
+            print("[DEBUG] No notification services configured. Check config.NOTIFICATION_URLS.")
         return
 
     if error:
@@ -41,6 +47,14 @@ def send_notification(message, title="", error=False, batchable=True):
         notifications.append(message)
     else:
         apprise.notify(body=message, title=title)
+
+
+def debug_print(message, indent=0):
+    """Print debug message with indentation."""
+    if config.DEBUG:
+        indent_str = "  " * indent
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"[{timestamp}] [DEBUG]{indent_str} {message}")
 
 def send_batch_notification():
     now = datetime.now()

@@ -9,9 +9,21 @@ services:
       - TZ=Europe/London
       - ACC_NUMBER=<your_account_number>
       - API_KEY=<your_api_key>
-      - EXECUTION_TIME=23:00
-      - SWITCH_THRESHOLD=2
       - NOTIFICATION_URLS=<your_apprise_notification_urls>
       - ONE_OFF=false
       - DRY_RUN=false
       - TARIFFS=go,agile,flexible
+      - BATCH_NOTIFICATIONS=false
+      
+      # Retrospective Mode (Default)
+      - EXECUTION_TIME=23:00
+      - SWITCH_THRESHOLD=2
+      
+      # Predictive Mode (Comment out the retrospective mode settings above and uncomment below)
+      # - PREDICTIVE_MODE=true
+      # - DECISION_TIME=17:00
+      # - SWITCH_TIME=00:01
+      # - BATTERY_CAPACITY_KWH=9.5
+      # - BATTERY_CHARGE_RATE_KW=3.6
+      # - BATTERY_MIN_CHARGE_PERCENT=0.8
+      # - CHEAP_RATE_MULTIPLIER=1.2

@@ -26,3 +26,19 @@ ONE_OFF_RUN = os.getenv("ONE_OFF", "false") in ["true", "True", "1"]
 
 # Whether to notify the user of a switch but not actually switch
 DRY_RUN = os.getenv("DRY_RUN", "false") in ["true", "True", "1"]
+
+# Predictive mode for predbat integration
+PREDICTIVE_MODE = os.getenv("PREDICTIVE_MODE", "false") in ["true", "True", "1"]
+DECISION_TIME = os.getenv("DECISION_TIME", "17:00")  # When to check tomorrow's rates
+SWITCH_TIME = os.getenv("SWITCH_TIME", "00:01")  # When to execute the switch
+
+# Battery parameters for predictive mode
+BATTERY_CAPACITY_KWH = float(os.getenv("BATTERY_CAPACITY_KWH", "9.5"))
+BATTERY_CHARGE_RATE_KW = float(os.getenv("BATTERY_CHARGE_RATE_KW", "3.6"))
+BATTERY_MIN_CHARGE_PERCENT = float(os.getenv("BATTERY_MIN_CHARGE_PERCENT", "0.8"))  # Minimum charge % to count as viable period
+
+# Predictive mode comparison parameters
+CHEAP_RATE_MULTIPLIER = float(os.getenv("CHEAP_RATE_MULTIPLIER", "1.2"))  # Multiplier for Go rate to determine "cheap" periods (e.g., 1.2 = 120%)
+
+# Debug mode - prints detailed information to console
+DEBUG = os.getenv("DEBUG", "false") in ["true", "True", "1"]
