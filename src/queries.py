@@ -12,7 +12,7 @@ accept_terms_query = """mutation {{
             versionMajor: {version_major},
             versionMinor: {version_minor}
         }}
-    }}) 
+    }})
     {{
     acceptedVersion
   }}

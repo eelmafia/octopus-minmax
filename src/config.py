@@ -22,7 +22,7 @@ SWITCH_THRESHOLD = int(os.getenv("SWITCH_THRESHOLD", 2))
 TARIFFS = os.getenv("TARIFFS", "go,agile,flexible")
 
 # Whether to just run immediately and exit
-ONE_OFF_RUN = os.getenv("ONE_OFF", "false") in ["true", "True", "1"]
+ONE_OFF_RUN = os.getenv("ONE_OFF", "True") in ["true", "True", "1"]
 
 # Whether to notify the user of a switch but not actually switch
-DRY_RUN = os.getenv("DRY_RUN", "false") in ["true", "True", "1"]
+DRY_RUN = os.getenv("DRY_RUN", "True") in ["true", "True", "1"]
