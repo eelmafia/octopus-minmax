@@ -53,7 +53,7 @@ class ComparisonResult:
     def should_switch(self) -> bool:
         return (self.cheapest_tariff is not None and
                 self.cheapest_tariff != self.current_tariff_comparison.tariff and
-                self.potential_savings > 2) # buffer
+                self.potential_savings > config.SWITCH_THRESHOLD) # buffer
 
     @property
     def all_comparisons(self) -> List[TariffComparison]:
