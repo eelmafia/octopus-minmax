@@ -25,27 +25,27 @@ class BotOrchestrator:
     def start(self) -> None:
         self.notification_service = NotificationService(config.NOTIFICATION_URLS, config.BATCH_NOTIFICATIONS)
         ns = self.notification_service
-        if config.ONE_OFF_RUN:
-            ns.send_notification(message=f"Octobot {config.BOT_VERSION} on. Running a one off comparison.")
-            self._run_tariff_compare()
-        else:
-            ns.send_notification(message=f"Welcome to Octobot {config.BOT_VERSION}. I will run your comparisons at {config.EXECUTION_TIME}", batchable=False)
-            self._run_scheduled()
 
-    def _run_scheduled(self) -> None:
+        mode_msg = "ONE_OFF mode enabled" if config.ONE_OFF_RUN else f"Scheduled mode, running at {config.EXECUTION_TIME}"
+        ns.send_notification(f"Octobot {config.BOT_VERSION} - {mode_msg}")
+
         while True:
-            now = datetime.now()
-            current_time = now.strftime("%H:%M")
-            current_date = now.date()
-            if current_time == config.EXECUTION_TIME and self.last_execution_date != current_date:
-                self.last_execution_date = current_date
-                # 10 Sec - 15 Min Random Delay to prevent all users attempting to access API at same time
-                delay = random.randint(10,900)
-                self.notification_service.send_notification(message=f"Octobot {config.BOT_VERSION} on. Initiating comparison in {delay/60:.1f} minutes")
-                delay = time.sleep(delay)
+            if config.ONE_OFF_RUN and not config.ONE_OFF_EXECUTED:
+                ns.send_notification(f"Octobot {config.BOT_VERSION} - Running one-off comparison")
                 self._run_tariff_compare()
+                config.ONE_OFF_EXECUTED = True
+            elif not config.ONE_OFF_RUN:
+                now = datetime.now()
+                current_time = now.strftime("%H:%M")
+                current_date = now.date()
+                if current_time == config.EXECUTION_TIME and self.last_execution_date != current_date:
+                    self.last_execution_date = current_date
+                    delay = random.randint(10, 900)
+                    ns.send_notification(f"Octobot {config.BOT_VERSION} - Initiating comparison in {delay/60:.1f} minutes")
+                    time.sleep(delay)
+                    self._run_tariff_compare()
 
-            time.sleep(30) # Check time every 30 seconds
+            time.sleep(30)
 
     def _initialize(self) -> None:
         logger.debug(f"{__name__}")

@@ -5,6 +5,10 @@ services:
     container_name: MinMaxOctopusBot
     image: eelmafia/octopus-minmax-bot
     restart: unless-stopped
+    ports:
+      - "5050:5050"
+    volumes:
+      - ./logs:/app/logs
     environment:
       - TZ=Europe/London
       - ACC_NUMBER=<your_account_number>
