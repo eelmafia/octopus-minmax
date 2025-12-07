@@ -157,12 +157,14 @@ class ComparisonEngine:
 
 
     def _calculate_current_cost(self, account_info:AccountInfo) -> CostBreakdown:
-        # Total consumption cost -remove comment
         total_con_cost = sum(float(entry['costDeltaWithTax'] or 0) for entry in account_info.consumption)
 
-            # Total consumption
+        # Total consumption
         total_wh = sum(float(consumption['consumptionDelta']) for consumption in account_info.consumption)
         total_kwh = total_wh / 1000
+
+        if total_kwh == 0:
+            raise ValueError("No consumption data found. Is your home mini okay?")
 
         return CostBreakdown(
                 consumption_cost=total_con_cost,
