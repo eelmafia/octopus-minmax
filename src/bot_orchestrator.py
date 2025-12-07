@@ -13,6 +13,9 @@ from notification_service import NotificationService
 import logging
 logger = logging.getLogger('octobot.bot_orchestrator')
 
+def get_timestamp():
+    return datetime.now().strftime("%d/%m/%Y %H:%M")
+
 class BotOrchestrator:
     def __init__(self):
         logger.debug(f"Initialising {__class__.__name__}")
@@ -27,11 +30,11 @@ class BotOrchestrator:
         ns = self.notification_service
 
         mode_msg = "ONE_OFF mode enabled" if config.ONE_OFF_RUN else f"Scheduled mode, running at {config.EXECUTION_TIME}"
-        ns.send_notification(f"Octobot {config.BOT_VERSION} - {mode_msg}")
+        ns.send_notification(f"[{get_timestamp()}] Octobot {config.BOT_VERSION} - {mode_msg}")
 
         while True:
             if config.ONE_OFF_RUN and not config.ONE_OFF_EXECUTED:
-                ns.send_notification(f"Octobot {config.BOT_VERSION} - Running one-off comparison")
+                ns.send_notification(f"[{get_timestamp()}] Octobot {config.BOT_VERSION} - Running one-off comparison")
                 self._run_tariff_compare()
                 config.ONE_OFF_EXECUTED = True
             elif not config.ONE_OFF_RUN:
@@ -41,7 +44,7 @@ class BotOrchestrator:
                 if current_time == config.EXECUTION_TIME and self.last_execution_date != current_date:
                     self.last_execution_date = current_date
                     delay = random.randint(10, 900)
-                    ns.send_notification(f"Octobot {config.BOT_VERSION} - Initiating comparison in {delay/60:.1f} minutes")
+                    ns.send_notification(f"[{get_timestamp()}] Octobot {config.BOT_VERSION} - Initiating comparison in {delay/60:.1f} minutes")
                     time.sleep(delay)
                     self._run_tariff_compare()
 
