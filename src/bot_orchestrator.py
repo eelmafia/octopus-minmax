@@ -22,7 +22,7 @@ class BotOrchestrator:
         self.query_service = None
         self.account_manager = None
         self.tariffs = []
-        self.last_execution_date = None
+        self.last_execution_datetime = None
         self.notification_service = None
 
     def start(self) -> None:
@@ -40,9 +40,9 @@ class BotOrchestrator:
             elif not config.ONE_OFF_RUN:
                 now = datetime.now()
                 current_time = now.strftime("%H:%M")
-                current_date = now.date()
-                if current_time == config.EXECUTION_TIME and self.last_execution_date != current_date:
-                    self.last_execution_date = current_date
+                current_minute = now.replace(second=0, microsecond=0)  # Datetime object at minute precision
+                if current_time == config.EXECUTION_TIME and self.last_execution_datetime != current_minute:
+                    self.last_execution_datetime = current_minute
                     delay = random.randint(10, 900)
                     ns.send_notification(f"[{get_timestamp()}] Octobot {config.BOT_VERSION} - Initiating comparison in {delay/60:.1f} minutes")
                     time.sleep(delay)
