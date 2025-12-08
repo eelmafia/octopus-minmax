@@ -25,9 +25,15 @@ def config_page():
         else:
             # Update config
             try:
+                submitted_values = request.form.to_dict()
+                logger.info(f"Config update submitted: {submitted_values}")
+
                 config_manager.update_config(request.form.to_dict())
+
+                new_config = config_manager.get_config()
+                logger.info(f"Config updated successfully. New state: {new_config}")
+
                 flash('Configuration updated successfully! (Will reset on container restart)', 'success')
-                logger.info("Config updated via web UI")
             except Exception as e:
                 flash(f'Error updating config: {str(e)}', 'error')
                 logger.error(f"Config update failed: {e}")
