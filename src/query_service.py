@@ -83,6 +83,15 @@ class QueryService:
                 if response.ok:
                     result = response.json()
                     if "errors" in result:
+                        error_codes = [e.get("extensions", {}).get("errorCode") for e in result.get("errors", [])]
+                        if "KT-CT-1124" in error_codes and not token_refreshed:
+                            logger.debug("JWT expired, refreshing token...")
+                            try:
+                                QueryService._shared_token = self._get_token()
+                                token_refreshed = True
+                                continue  # Retry with new token
+                            except Exception as e:
+                                logger.warning(f"Failed to refresh token: {e}")
                         raise Exception(f"GQL errors: {result['errors']}")
 
                     data = result.get("data")
