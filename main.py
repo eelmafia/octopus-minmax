@@ -211,8 +211,10 @@ def compare_and_switch():
     total_wh = sum(float(consumption['consumptionDelta']) for consumption in account_info.consumption)
     total_kwh = total_wh / 1000  # Convert watt-hours to kilowatt-hours
 
+    # Print runtime
+    summary = f"Date: {date.today():%Y-%m-%d}\n"
     # Print out consumption on current tariff
-    summary = f"Total Consumption today: {total_kwh:.4f} kWh\n"
+    summary += f"Total Consumption today: {total_kwh:.4f} kWh\n"
     summary += f"Current tariff {current_tariff.display_name}: £{total_curr_cost / 100:.2f} " \
                f"(£{total_con_cost / 100:.2f} con + " \
                f"£{account_info.standing_charge / 100:.2f} s/c)\n"
