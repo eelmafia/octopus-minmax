@@ -1,5 +1,7 @@
-from flask import Flask, render_template, request, redirect, flash, jsonify
+from flask import Flask, render_template, request, redirect, flash, Response
+from functools import wraps
 import config_manager
+import config
 import logging
 
 logger = logging.getLogger('octobot.web_server')
@@ -7,14 +9,29 @@ logger = logging.getLogger('octobot.web_server')
 app = Flask(__name__)
 app.secret_key = 'octobot-tool'
 
+def require_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.authorization
+        if not auth or not (auth.username == config.WEB_USERNAME and auth.password == config.WEB_PASSWORD):
+            return Response(
+                'Authentication required',
+                401,
+                {'WWW-Authenticate': 'Basic realm="OctoBot Login Required"'}
+            )
+        return f(*args, **kwargs)
+    return decorated
+
 
 @app.route('/')
+@require_auth
 def index():
     """Homepage - Dashboard with navigation buttons"""
     return render_template('index.html')
 
 
 @app.route('/config', methods=['GET', 'POST'])
+@require_auth
 def config_page():
     if request.method == 'POST':
         # Validate input
@@ -45,6 +62,7 @@ def config_page():
 
 
 @app.route('/logs')
+@require_auth
 def logs():
     log_lines = tail_file('logs/octobot.log', None)  # None = read entire file
     log_entries = group_log_entries(log_lines)

@@ -19,3 +19,5 @@ services:
       - ONE_OFF=false
       - DRY_RUN=false
       - TARIFFS=go,agile,flexible
+      - WEB_USERNAME=admin
+      - WEB_PASSWORD=admin # not meant to be secure
