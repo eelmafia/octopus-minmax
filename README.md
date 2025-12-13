@@ -9,15 +9,23 @@ I created this because I've been a long-time Agile customer who got tired of the
 
 I personally have this running automatically every day at 11 PM inside a Raspberry Pi Docker container, but you can run it wherever you want.  It sends notifications and updates to a variety of services via [Apprise](https://github.com/caronc/apprise), but that's not required for it to work.
 
+## Web Dashboard
+
+After starting the bot you can access the web dashboard on `localhost:5050`
+
+- Make changes to your config through the dashboard without needing to restart
+- Access and read logs
+- See graph of savings (coming soon)
+
 ## How to Use
 
 ### Requirements
-- An Octopus Energy Account  
+- An Octopus Energy Account
   - In case you don't have one, we both get £50 for using my referral: https://share.octopus.energy/coral-lake-50
   - Get your API key [here](https://octopus.energy/dashboard/new/accounts/personal-details/api-access)
 - A smart meter
 - Be on a supported Octopus Smart Tariff (see tariffs below)
-- An Octopus Home Mini for real-time usage (**Important**). Get one for free [here](https://octopus.energy/blog/octopus-home-mini/).
+- An Octopus Home Mini for real-time usage (**Important**). Request one from Octopus Energy for free [here](https://octopus.energy/blog/octopus-home-mini/).
 
 ### HomeAssistant Addon
 
@@ -37,7 +45,7 @@ https://github.com/eelmafia/octopus-minmax
 ### Running Manually
 1. Install the Python requirements.
 2. Configure the environment variables.
-3. Schedule this to run once a day with a CRON job or Docker. I recommend running it at 11 PM to leave yourself an hour as a safety margin in case Octopus takes a while to generate your new agreement.
+3. Run `main.py`. I recommend scheduling it to run it at 11 PM in order to leave yourself an hour as a safety margin in case Octopus takes a while to generate your new agreement.
 
 ### Running using Docker
 Docker run command:
@@ -54,7 +62,8 @@ docker run -d \
   -e TARIFFS=go,agile,flexible \
   -e TZ=Europe/London \
   -e BATCH_NOTIFICATIONS=false \
-  --restart unless-stopped \
+  -e WEB_USERNAME="<whatever_you_want>" \
+  -e WEB_PASSWORD="<whatever_you_want>" \
   eelmafia/octopus-minmax-bot
 ```
 or use the docker-compose.yaml **Don't forget to add your environment variables**
@@ -66,13 +75,17 @@ Note : Remove the --restart unless line if you set the ONE_OFF variable or it wi
 |-----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `ACC_NUMBER`                | Your Octopus Energy account number.                                                                                                                                                                                     |
 | `API_KEY`                   | API token for accessing your Octopus Energy account.                                                                                                                                                                    |
-| `TARIFFS`                   | A list of tariffs to compare against. Default is go,agile,flexible                                                                                                                                                      | 
+| `TARIFFS`                   | A list of tariffs to compare against. Default is go,agile,flexible                                                                                                                                                      |
 | `EXECUTION_TIME`            | (Optional) The time (HH:MM) when the script should execute. Default is `23:00` (11 PM).                                                                                                                                 |
 | `SWITCH_THRESHOLD`          | A value (in pence) which the saving must be before the switch occurs. Default is `2` (2p). |
 | `NOTIFICATION_URLS`         | (Optional) A comma-separated list of [Apprise](https://github.com/caronc/apprise) notification URLs for sending logs and updates.  See [Apprise documentation](https://github.com/caronc/apprise/wiki) for URL formats. |
 | `ONE_OFF`                   | (Optional) A flag for you to simply trigger an immediate execution instead of starting scheduling.                                                                                                                      |
 | `DRY_RUN`                   | (optional) A flag to compare but not switch tariffs.                                                                                                                                                                    |
 | `BATCH_NOTIFICATIONS`       | (optional) A flag to send messages in one batch rather than individually.                                                                                                                                               |
+| `WEB_USERNAME`              | (optional) Defaults to `admin`. Auth for the web dashboard.
+| `WEB_PASSWORD`              | (optional) Defaults to `admin`. Auth for the web dashboard.
+
+*Reminder: Change the password to something else other than default. It's not meant to be secure, it's just there to stop others on your network from accessing the dashboard and your API key. If they have access to your compose/config files you're already cooked.*
 
 #### Supported Tariffs
 
