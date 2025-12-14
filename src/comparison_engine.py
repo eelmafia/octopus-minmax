@@ -51,6 +51,7 @@ class ComparisonResult:
 
     @property
     def should_switch(self) -> bool:
+        logger.debug(f"cheapest_tariff: {self.cheapest_tariff.display_name}, potential_savings: {self.potential_savings}, SWITCH_THRESHOLD: {config.SWITCH_THRESHOLD}")
         return (self.cheapest_tariff is not None and
                 self.cheapest_tariff != self.current_tariff_comparison.tariff and
                 self.potential_savings > config.SWITCH_THRESHOLD) # buffer

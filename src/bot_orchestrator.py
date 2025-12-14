@@ -139,7 +139,9 @@ class BotOrchestrator:
                           f"{results.cheapest_tariff.display_name} at "
                           f"£{results.current_tariff_comparison.cost_breakdown.total_cost_pounds:.2f}")
             else:
-                message = "Not switching today."
+                message = (f"Not switching today - savings of (£{results.potential_savings / 100:.2f}) "
+                           f"on the cheapest tariff {results.cheapest_tariff.display_name} are below your "
+                           f"threshold of £{config.SWITCH_THRESHOLD / 100:.2f}")
             ns.send_notification(message)
 
     def _execute_switch(self, target_tariff: Tariff, account_info: AccountInfo) -> None:
