@@ -52,6 +52,8 @@ Docker run command:
 ```
 docker run -d \
   --name MinMaxOctopusBot \
+  -p 5001:5001 \
+  -v ./logs:/app/logs \
   -e ACC_NUMBER="<your_account_number>" \
   -e API_KEY="<your_api_key>" \
   -e EXECUTION_TIME="23:00" \
@@ -80,10 +82,11 @@ Note : Remove the --restart unless line if you set the ONE_OFF variable or it wi
 | `SWITCH_THRESHOLD`          | A value (in pence) which the saving must be before the switch occurs. Default is `2` (2p). |
 | `NOTIFICATION_URLS`         | (Optional) A comma-separated list of [Apprise](https://github.com/caronc/apprise) notification URLs for sending logs and updates.  See [Apprise documentation](https://github.com/caronc/apprise/wiki) for URL formats. |
 | `ONE_OFF`                   | (Optional) A flag for you to simply trigger an immediate execution instead of starting scheduling.                                                                                                                      |
-| `DRY_RUN`                   | (optional) A flag to compare but not switch tariffs.                                                                                                                                                                    |
-| `BATCH_NOTIFICATIONS`       | (optional) A flag to send messages in one batch rather than individually.                                                                                                                                               |
-| `WEB_USERNAME`              | (optional) Defaults to `admin`. Auth for the web dashboard.
-| `WEB_PASSWORD`              | (optional) Defaults to `admin`. Auth for the web dashboard.
+| `DRY_RUN`                   | (Optional) A flag to compare but not switch tariffs.                                                                                                                                                                    |
+| `BATCH_NOTIFICATIONS`       | (Optional) A flag to send messages in one batch rather than individually.                                                                                                                                               |
+| `WEB_USERNAME`              | (Optional) Defaults to `admin`. Auth for the web dashboard.
+| `WEB_PASSWORD`              | (Optional) Defaults to `admin`. Auth for the web dashboard.
+| `WEB_PORT`                  | (Optional) Defaults to `5050`.
 
 *Reminder: Change the password to something else other than default. It's not meant to be secure, it's just there to stop others on your network from accessing the dashboard and your API key. If they have access to your compose/config files you're already cooked.*
 

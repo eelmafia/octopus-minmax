@@ -115,5 +115,5 @@ def group_log_entries(log_lines):
 
 
 def run_server():
-    logger.info("Web server starting on http://localhost:5050")
-    app.run(host='0.0.0.0', port=5050, debug=False, use_reloader=False)
+    logger.info(f"Web server starting on http://localhost:{config.WEB_PORT}")
+    app.run(host='0.0.0.0', port=config.WEB_PORT, debug=False, use_reloader=False)
