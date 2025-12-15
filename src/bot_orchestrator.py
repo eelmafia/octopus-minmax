@@ -159,7 +159,7 @@ class BotOrchestrator:
 
         # Give octopus some time to generate the agreement
         time.sleep(120)
-        accepted_version = self._accept_new_agreement(target_tariff.product_code, enrolment_id)
+        accepted_version = self.account_manager.accept_new_agreement(target_tariff.product_code, enrolment_id)
         ns.send_notification(f"Accepted agreement (v.{accepted_version}). Switch successful.")
 
         verified = self.account_manager.verify_new_agreement_status()
