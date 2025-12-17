@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-bold text-gray-100">Bot Logs</h2>
+        <a href="/" class="text-blue-400 hover:text-blue-300">← Back to Dashboard</a>
+    </div>
+
+    <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 overflow-hidden">
+        <div id="log-container" class="bg-black rounded p-4 overflow-y-auto" style="max-height: 70vh;">
+            <div class="text-sm font-mono text-gray-300">
+                {% for entry in log_entries %}
+                    <div class="border-b border-gray-800 pb-2 mb-2 whitespace-pre-wrap">{{ entry }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Scroll to bottom on page load
+    window.addEventListener('load', function() {
+        const logContainer = document.getElementById('log-container');
+        logContainer.scrollTop = logContainer.scrollHeight;
+    });
+</script>
+{% endblock %}
