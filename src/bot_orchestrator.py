@@ -30,7 +30,7 @@ class BotOrchestrator:
         ns = self.notification_service
 
         mode_msg = "ONE_OFF mode enabled" if config.ONE_OFF_RUN else f"Scheduled mode, running at {config.EXECUTION_TIME}"
-        ns.send_notification(f"[{get_timestamp()}] Octobot {config.BOT_VERSION} - {mode_msg}")
+        ns.send_notification(f"[{get_timestamp()}] Octobot {config.BOT_VERSION} - {mode_msg} \n Check port {config.WEB_PORT} for dashboard.")
 
         while True:
             if config.ONE_OFF_RUN and not config.ONE_OFF_EXECUTED:
@@ -155,10 +155,11 @@ class BotOrchestrator:
             ns.send_notification("ERROR: Couldn't get enrolment ID")
             return
 
-        ns.send_notification("Tariff switch requested successfully.")
+        wait_time = 120
+        ns.send_notification(f"Tariff switch requested successfully. Waiting {wait_time}s before attempting to accept new agreement.")
 
         # Give octopus some time to generate the agreement
-        time.sleep(120)
+        time.sleep(wait_time)
         accepted_version = self.account_manager.accept_new_agreement(target_tariff.product_code, enrolment_id)
         ns.send_notification(f"Accepted agreement (v.{accepted_version}). Switch successful.")
 
