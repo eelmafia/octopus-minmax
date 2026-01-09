@@ -5,6 +5,10 @@ services:
     container_name: MinMaxOctopusBot
     image: eelmafia/octopus-minmax-bot
     restart: unless-stopped
+    ports:
+      - "5050:5050"
+    volumes:
+      - ./logs:/app/logs
     environment:
       - TZ=Europe/London
       - ACC_NUMBER=<your_account_number>
@@ -15,3 +19,5 @@ services:
       - ONE_OFF=false
       - DRY_RUN=false
       - TARIFFS=go,agile,flexible
+      - WEB_USERNAME=admin
+      - WEB_PASSWORD=admin # not meant to be secure
