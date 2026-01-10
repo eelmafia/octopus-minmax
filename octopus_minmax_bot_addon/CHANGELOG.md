@@ -1,3 +1,6 @@
+## v1.0.2 - v1.0.2
+**Full Changelog**: https://github.com/eelmafia/octopus-minmax/compare/v1.0.1...v1.0.2
+
 ## v1.0.0 - v1.0.0
 ## What's Changed
 * Refactor code and add web UI by @eelmafia in https://github.com/eelmafia/octopus-minmax/pull/128
