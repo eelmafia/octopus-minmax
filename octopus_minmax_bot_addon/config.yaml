@@ -4,7 +4,7 @@ image: eelmafia/octopus-minmax-bot
 url: https://github.com/eelmafia/octopus-minmax
 ingress: true
 ingress_port: 5050
-version: v1.0.0
+version: v1.0.1
 slug: octopus_minmax_bot
 startup: application
 init: false
