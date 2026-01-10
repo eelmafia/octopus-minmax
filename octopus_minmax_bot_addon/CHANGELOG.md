@@ -1,3 +1,10 @@
+## v1.0.0 - v1.0.0
+## What's Changed
+* Refactor code and add web UI by @eelmafia in https://github.com/eelmafia/octopus-minmax/pull/128
+
+
+**Full Changelog**: https://github.com/eelmafia/octopus-minmax/compare/v0.8.5...v1.0.0
+
 ## v0.8.5 - v0.8.5
 ## What's Changed
 * Improve cosy regex to avoid fixed tariff by @eelmafia in https://github.com/eelmafia/octopus-minmax/pull/119
