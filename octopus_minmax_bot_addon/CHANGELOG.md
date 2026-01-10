@@ -1,5 +1,12 @@
 ## v1.0.2 - v1.0.2
 **Full Changelog**: https://github.com/eelmafia/octopus-minmax/compare/v1.0.1...v1.0.2
+## v1.0.1 - v1.0.1
+## What's Changed
+* Update Addon Configuration to v1.0.0 by @github-actions[bot] in https://github.com/eelmafia/octopus-minmax/pull/136
+* Fix path in workflow script by @eelmafia in https://github.com/eelmafia/octopus-minmax/pull/137
+
+
+**Full Changelog**: https://github.com/eelmafia/octopus-minmax/compare/v1.0.0...v1.0.1
 
 ## v1.0.0 - v1.0.0
 ## What's Changed
