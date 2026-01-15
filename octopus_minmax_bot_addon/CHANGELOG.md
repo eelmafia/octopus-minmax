@@ -1,3 +1,11 @@
+## v1.0.5 - v1.0.5
+## What's Changed
+* Update Addon Configuration to v1.0.4 by @github-actions[bot] in https://github.com/eelmafia/octopus-minmax/pull/146
+* Ingress fixes by @DJBenson in https://github.com/eelmafia/octopus-minmax/pull/147
+
+
+**Full Changelog**: https://github.com/eelmafia/octopus-minmax/compare/v1.0.4...v1.0.5
+
 ## v1.0.4 - v1.0.4
 ## What's Changed
 * Update Addon Configuration to v1.0.3 by @github-actions[bot] in https://github.com/eelmafia/octopus-minmax/pull/143
