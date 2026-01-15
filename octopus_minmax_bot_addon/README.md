@@ -11,19 +11,18 @@ I personally have this running automatically every day at 11 PM inside a Raspber
 
 ## Web Dashboard
 
-After starting the bot you can access the web dashboard on `localhost:5050`. If accessing via Home Assistant, the dashboard is exposed via ingress. You can also optionally enable the dashboard on a port of your choice (default: `5050`) by specifying a network port at the bottom of the configuration page.
+After starting the bot you can access the web dashboard on `localhost:5050`
 
 - Make changes to your config through the dashboard without needing to restart
 - Access and read logs
 - See graph of savings (coming soon)
 
-The default username and password is `admin` - I **strongly** recommend changing this before running the bot. For Home Assistant users, no authentication is required whilst using inside of Home Assistant.
-
 ## How to Use
 
 ### Requirements
-- An Octopus Energy Account (Get your API key [here](https://octopus.energy/dashboard/new/accounts/personal-details/api-access))
-- In case you don't have one, we both get £50 for using my referral: [https://share.octopus.energy/coral-lake-50](https://share.octopus.energy/coral-lake-50)
+- An Octopus Energy Account
+  - In case you don't have one, we both get £50 for using my referral: https://share.octopus.energy/coral-lake-50
+  - Get your API key [here](https://octopus.energy/dashboard/new/accounts/personal-details/api-access)
 - A smart meter
 - Be on a supported Octopus Smart Tariff (see tariffs below)
 - An Octopus Home Mini for real-time usage (**Important**). Request one from Octopus Energy for free [here](https://octopus.energy/blog/octopus-home-mini/).
