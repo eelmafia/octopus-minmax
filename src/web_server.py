@@ -55,7 +55,7 @@ def config_page():
                 flash(f'Error updating config: {str(e)}', 'error')
                 logger.error(f"Config update failed: {e}")
 
-        return redirect('/config')
+        return redirect('config')
 
     current_config = config_manager.get_config()
     return render_template('config.html', config=current_config)
