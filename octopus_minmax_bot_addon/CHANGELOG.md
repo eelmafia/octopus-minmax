@@ -1,3 +1,11 @@
+## v1.0.4 - v1.0.4
+## What's Changed
+* Update Addon Configuration to v1.0.3 by @github-actions[bot] in https://github.com/eelmafia/octopus-minmax/pull/143
+* Add missing authentication fields by @DJBenson in https://github.com/eelmafia/octopus-minmax/pull/145
+
+
+**Full Changelog**: https://github.com/eelmafia/octopus-minmax/compare/v1.0.3...v1.0.4
+
 ## v1.0.3 - v1.0.3
 ## What's Changed
 * Update Addon Configuration to v1.0.1 by @github-actions[bot] in https://github.com/eelmafia/octopus-minmax/pull/138
