@@ -26,6 +26,8 @@ options:
   TARIFFS: "agile,go,flexible"
   TZ: "Europe/London"
   BATCH_NOTIFICATIONS: false
+  WEB_USERNAME: "admin"
+  WEB_PASSWORD: "admin"
 schema:
   API_KEY: str
   ACC_NUMBER: str
@@ -37,3 +39,5 @@ schema:
   TARIFFS: str
   TZ: str
   BATCH_NOTIFICATIONS: bool
+  WEB_USERNAME: str
+  WEB_PASSWORD: password
