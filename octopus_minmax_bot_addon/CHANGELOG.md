@@ -1,3 +1,12 @@
+## v1.0.3 - v1.0.3
+## What's Changed
+* Update Addon Configuration to v1.0.1 by @github-actions[bot] in https://github.com/eelmafia/octopus-minmax/pull/138
+* Update Addon Configuration to v1.0.2 by @github-actions[bot] in https://github.com/eelmafia/octopus-minmax/pull/139
+* Fix web dashboard paths in HA by @eelmafia in https://github.com/eelmafia/octopus-minmax/pull/142
+
+
+**Full Changelog**: https://github.com/eelmafia/octopus-minmax/compare/v1.0.2...v1.0.3
+
 ## v1.0.2 - v1.0.2
 **Full Changelog**: https://github.com/eelmafia/octopus-minmax/compare/v1.0.1...v1.0.2
 ## v1.0.1 - v1.0.1
