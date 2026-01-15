@@ -4,11 +4,15 @@ image: eelmafia/octopus-minmax-bot
 url: https://github.com/eelmafia/octopus-minmax
 ingress: true
 ingress_port: 5050
+ports:
+  5050/tcp: null
+ports_description:
+  5050/tcp: Web UI (optional external access)
+webui: http://[HOST]:[PORT:5050]/
 version: v1.0.4
 slug: octopus_minmax_bot
 startup: application
 init: false
-legacy: true
 description: A bot to automatically compare and switch smart electricity tariffs on Octopus Energy
 arch:
   - armhf

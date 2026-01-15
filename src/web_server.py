@@ -9,9 +9,15 @@ logger = logging.getLogger('octobot.web_server')
 app = Flask(__name__)
 app.secret_key = 'octobot-tool'
 
+def is_ingress_request():
+    # Skip auth for ingress requests
+    return bool(request.headers.get('X-Ingress-Path') or request.headers.get('X-Hassio-Ingress'))
+
 def require_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+        if is_ingress_request():
+            return f(*args, **kwargs)
         auth = request.authorization
         if not auth or not (auth.username == config.WEB_USERNAME and auth.password == config.WEB_PASSWORD):
             return Response(
