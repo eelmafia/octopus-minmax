@@ -4,6 +4,24 @@
 <div class="flex flex-col items-center justify-center min-h-[60vh]">
     <h2 class="text-3xl font-bold mb-12 text-gray-100">Dashboard</h2>
 
+    {% if missing_config %}
+    <div class="w-full max-w-4xl mb-8 bg-yellow-900 border border-yellow-700 text-yellow-100 rounded-lg p-4 text-center">
+        No config file found, edit the configuration and click Update Configuration to generate the file.
+    </div>
+    {% else %}
+    <div class="w-full max-w-4xl mb-8 bg-green-900 border border-green-700 text-green-100 rounded-lg p-4 text-center">
+        <div class="text-sm font-semibold uppercase tracking-wide text-green-200 mb-2">Summary</div>
+        {% if config.one_off_run %}
+            Ad-hoc run enabled using a threshold of {{ config.switch_threshold }}p. The tariffs to be compared are {{ tariffs_display }}.
+        {% else %}
+            Next run scheduled for {{ run_prefix }} {{ config.execution_time }} using a threshold of {{ config.switch_threshold }}p. The tariffs to be compared are {{ tariffs_display }}.
+        {% endif %}
+        {% if config.dry_run %}
+            <div class="mt-2">This is a dry run, no switch will occur.</div>
+        {% endif %}
+    </div>
+    {% endif %}
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
         <!-- Config Button -->
         <a href="config" class="group">
