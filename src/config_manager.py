@@ -1,8 +1,74 @@
 import threading
 import re
+import json
+import os
+import logging
 import config
+from werkzeug.security import generate_password_hash
 
 _config_lock = threading.Lock()
+_CONFIG_PATH = os.getenv("OCTOBOT_CONFIG_PATH", "/config/config.json")
+logger = logging.getLogger('octobot.config_manager')
+
+def _coerce_bool(value, default=False):
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.lower() in ['true', '1', 'yes', 'on']
+    if isinstance(value, (int, float)):
+        return value != 0
+    return default
+
+def _apply_persisted_values(values):
+    if not isinstance(values, dict):
+        return
+
+    if 'API_KEY' in values:
+        config.API_KEY = values['API_KEY']
+    if 'ACC_NUMBER' in values:
+        config.ACC_NUMBER = values['ACC_NUMBER']
+    if 'BASE_URL' in values:
+        config.BASE_URL = values['BASE_URL']
+    if 'EXECUTION_TIME' in values:
+        config.EXECUTION_TIME = values['EXECUTION_TIME']
+    if 'SWITCH_THRESHOLD' in values:
+        try:
+            config.SWITCH_THRESHOLD = int(values['SWITCH_THRESHOLD'])
+        except (TypeError, ValueError):
+            pass
+    if 'TARIFFS' in values:
+        config.TARIFFS = values['TARIFFS']
+    if 'ONE_OFF' in values:
+        config.ONE_OFF_RUN = _coerce_bool(values['ONE_OFF'], config.ONE_OFF_RUN)
+    if 'DRY_RUN' in values:
+        config.DRY_RUN = _coerce_bool(values['DRY_RUN'], config.DRY_RUN)
+    if 'NOTIFICATION_URLS' in values:
+        config.NOTIFICATION_URLS = values['NOTIFICATION_URLS']
+    if 'BATCH_NOTIFICATIONS' in values:
+        config.BATCH_NOTIFICATIONS = _coerce_bool(values['BATCH_NOTIFICATIONS'], config.BATCH_NOTIFICATIONS)
+    if 'WEB_USERNAME' in values:
+        config.WEB_USERNAME = values['WEB_USERNAME']
+    if 'WEB_PASSWORD' in values:
+        config.WEB_PASSWORD = values['WEB_PASSWORD']
+
+def load_persisted_config():
+    """Load persisted config from /data (Home Assistant) if present."""
+    with _config_lock:
+        for path in [_CONFIG_PATH]:
+            if not os.path.exists(path):
+                continue
+            try:
+                with open(path, 'r', encoding='utf-8') as f:
+                    values = json.load(f)
+                _apply_persisted_values(values)
+                logger.info("Loaded persisted config from %s", path)
+                return
+            except Exception as exc:
+                logger.warning("Failed to load persisted config from %s: %s", path, exc)
+
+def warn_if_missing_config():
+    if not os.path.exists(_CONFIG_PATH):
+        logger.warning("Config file missing at %s. Update configuration to create it.", _CONFIG_PATH)
 
 def get_config():
     """Get current configuration as dictionary (thread-safe)"""
@@ -19,6 +85,8 @@ def get_config():
             'dry_run': config.DRY_RUN,
             'notification_urls': config.NOTIFICATION_URLS,
             'batch_notifications': config.BATCH_NOTIFICATIONS,
+            'web_username': config.WEB_USERNAME,
+            'web_password': "",
         }
 
 
@@ -55,15 +123,59 @@ def update_config(new_values):
         else:
             # Checkbox not checked means False
             config.BATCH_NOTIFICATIONS = False
+        if 'web_username' in new_values and new_values['web_username']:
+            config.WEB_USERNAME = new_values['web_username']
+        if 'web_password' in new_values and new_values['web_password']:
+            config.WEB_PASSWORD = generate_password_hash(new_values['web_password'])
 
         if config.ONE_OFF_RUN and not previous_one_off:
             config.ONE_OFF_EXECUTED = False
+
+        _persist_config()
+
+def _persist_config():
+    payload = {
+        'API_KEY': config.API_KEY,
+        'ACC_NUMBER': config.ACC_NUMBER,
+        'BASE_URL': config.BASE_URL,
+        'EXECUTION_TIME': config.EXECUTION_TIME,
+        'SWITCH_THRESHOLD': config.SWITCH_THRESHOLD,
+        'TARIFFS': config.TARIFFS,
+        'ONE_OFF': config.ONE_OFF_RUN,
+        'DRY_RUN': config.DRY_RUN,
+        'NOTIFICATION_URLS': config.NOTIFICATION_URLS,
+        'BATCH_NOTIFICATIONS': config.BATCH_NOTIFICATIONS,
+        'WEB_USERNAME': config.WEB_USERNAME,
+        'WEB_PASSWORD': config.WEB_PASSWORD,
+    }
+    try:
+        os.makedirs(os.path.dirname(_CONFIG_PATH), exist_ok=True)
+        with open(_CONFIG_PATH, 'w', encoding='utf-8') as f:
+            json.dump(payload, f, indent=2, sort_keys=True)
+        logger.info("Persisted config to %s", _CONFIG_PATH)
+    except Exception as exc:
+        logger.warning("Failed to persist config to %s: %s", _CONFIG_PATH, exc)
 
 
 
 def validate_config(config_dict):
     """Validate config values before saving"""
     errors = []
+
+    if not config_dict.get('api_key'):
+        errors.append("API key is required")
+    if not config_dict.get('acc_number'):
+        errors.append("Account number is required")
+    if not config_dict.get('base_url'):
+        errors.append("Base URL is required")
+    if not config_dict.get('execution_time'):
+        errors.append("Execution time is required")
+    if not config_dict.get('switch_threshold'):
+        errors.append("Switch threshold is required")
+    if not config_dict.get('tariffs'):
+        errors.append("Tariffs are required")
+    if not config_dict.get('web_username'):
+        errors.append("Web username is required")
 
     # Validate execution_time format (HH:MM)
     if 'execution_time' in config_dict:
@@ -78,5 +190,13 @@ def validate_config(config_dict):
                 errors.append("Switch threshold must be positive")
         except ValueError:
             errors.append("Switch threshold must be a number")
+
+    batch_notifications = str(config_dict.get('batch_notifications', '')).lower() in ['true', '1', 'yes', 'on']
+    if batch_notifications and not config_dict.get('notification_urls'):
+        errors.append("Notification URLs are required when batch notifications are enabled")
+
+    if not os.path.exists(_CONFIG_PATH) or not config.WEB_PASSWORD:
+        if not config_dict.get('web_password'):
+            errors.append("Web password is required")
 
     return errors
