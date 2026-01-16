@@ -7,9 +7,16 @@
         <a href="." class="text-blue-400 hover:text-blue-300">← Back to Dashboard</a>
     </div>
 
+    <div class="flex items-center justify-end mb-3">
+        <label class="flex items-center text-gray-300 text-sm">
+            <input id="auto-refresh-toggle" type="checkbox" class="w-4 h-4 bg-gray-900 border border-gray-600 rounded mr-2" checked>
+            Auto refresh
+        </label>
+    </div>
+
     <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 overflow-hidden">
         <div id="log-container" class="bg-black rounded p-4 overflow-y-auto" style="max-height: 70vh;">
-            <div class="text-sm font-mono text-gray-300">
+            <div id="log-entries" class="text-sm font-mono text-gray-300">
                 {% for entry in log_entries %}
                     <div class="border-b border-gray-800 pb-2 mb-2 whitespace-pre-wrap">{{ entry }}</div>
                 {% endfor %}
@@ -19,10 +26,74 @@
 </div>
 
 <script>
-    // Scroll to bottom on page load
+    const logContainer = document.getElementById('log-container');
+    const logEntries = document.getElementById('log-entries');
+    const autoRefreshToggle = document.getElementById('auto-refresh-toggle');
+    let lastRendered = '';
+    let refreshTimer = null;
+
+    function isNearBottom(element) {
+        return element.scrollHeight - element.scrollTop - element.clientHeight < 40;
+    }
+
+    function escapeHtml(value) {
+        return value
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    async function refreshLogs() {
+        const wasAtBottom = isNearBottom(logContainer);
+        try {
+            const response = await fetch('/logs/entries?lines=200', { cache: 'no-store' });
+            if (!response.ok) {
+                return;
+            }
+            const entries = await response.json();
+            const nextRender = entries
+                .map((entry) => `<div class="border-b border-gray-800 pb-2 mb-2 whitespace-pre-wrap">${escapeHtml(entry)}</div>`)
+                .join('');
+            if (nextRender !== lastRendered) {
+                logEntries.innerHTML = nextRender;
+                lastRendered = nextRender;
+            }
+            if (wasAtBottom) {
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+        } catch (error) {
+            // Ignore transient polling errors.
+        }
+    }
+
+    function startAutoRefresh() {
+        if (refreshTimer) {
+            return;
+        }
+        refreshTimer = setInterval(refreshLogs, 1000);
+    }
+
+    function stopAutoRefresh() {
+        if (!refreshTimer) {
+            return;
+        }
+        clearInterval(refreshTimer);
+        refreshTimer = null;
+    }
+
     window.addEventListener('load', function() {
-        const logContainer = document.getElementById('log-container');
         logContainer.scrollTop = logContainer.scrollHeight;
+        startAutoRefresh();
+    });
+
+    autoRefreshToggle.addEventListener('change', function() {
+        if (autoRefreshToggle.checked) {
+            startAutoRefresh();
+        } else {
+            stopAutoRefresh();
+        }
     });
 </script>
 {% endblock %}
