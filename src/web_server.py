@@ -1,13 +1,22 @@
-from flask import Flask, render_template, request, redirect, flash, Response
+from flask import Flask, render_template, request, redirect, flash, Response, jsonify
 from functools import wraps
 import config_manager
 import config
 import logging
+import os
+from datetime import datetime
+from werkzeug.security import check_password_hash
 
 logger = logging.getLogger('octobot.web_server')
 
 app = Flask(__name__)
 app.secret_key = 'octobot-tool'
+CONFIG_PATH = os.getenv("OCTOBOT_CONFIG_PATH", "/config/config.json")
+
+def _is_password_hash(value):
+    if not value:
+        return False
+    return value.startswith(("pbkdf2:", "scrypt:", "argon2:", "sha256:"))
 
 def is_ingress_request():
     # Skip auth for ingress requests
@@ -18,8 +27,26 @@ def require_auth(f):
     def decorated(*args, **kwargs):
         if is_ingress_request():
             return f(*args, **kwargs)
+        if not os.path.exists(CONFIG_PATH):
+            return f(*args, **kwargs)
         auth = request.authorization
-        if not auth or not (auth.username == config.WEB_USERNAME and auth.password == config.WEB_PASSWORD):
+        if not auth:
+            return Response(
+                'Authentication required',
+                401,
+                {'WWW-Authenticate': 'Basic realm="OctoBot Login Required"'}
+            )
+        if auth.username != config.WEB_USERNAME:
+            return Response(
+                'Authentication required',
+                401,
+                {'WWW-Authenticate': 'Basic realm="OctoBot Login Required"'}
+            )
+        try:
+            password_ok = check_password_hash(config.WEB_PASSWORD, auth.password) if _is_password_hash(config.WEB_PASSWORD) else auth.password == config.WEB_PASSWORD
+        except ValueError:
+            password_ok = False
+        if not password_ok:
             return Response(
                 'Authentication required',
                 401,
@@ -33,7 +60,33 @@ def require_auth(f):
 @require_auth
 def index():
     """Homepage - Dashboard with navigation buttons"""
-    return render_template('index.html')
+    missing_config = not os.path.exists(CONFIG_PATH)
+    current_config = config_manager.get_config()
+    tariffs_display = _format_tariffs(current_config.get('tariffs', ''))
+    run_prefix = _next_run_prefix(current_config.get('execution_time', ''))
+    return render_template('index.html', missing_config=missing_config, config=current_config, tariffs_display=tariffs_display, run_prefix=run_prefix)
+
+def _format_tariffs(value):
+    items = [item.strip() for item in (value or '').split(',') if item.strip()]
+    items = [item[:1].upper() + item[1:] if item else item for item in items]
+    if not items:
+        return ""
+    if len(items) == 1:
+        return items[0]
+    if len(items) == 2:
+        return f"{items[0]} and {items[1]}"
+    return f"{', '.join(items[:-1])} and {items[-1]}"
+
+def _next_run_prefix(value):
+    try:
+        if not value:
+            return "today at"
+        run_time = datetime.strptime(value, "%H:%M").time()
+    except ValueError:
+        return "today at"
+
+    now_time = datetime.now().time()
+    return "tomorrow at" if now_time >= run_time else "today at"
 
 
 @app.route('/config', methods=['GET', 'POST'])
@@ -56,15 +109,17 @@ def config_page():
                 new_config = config_manager.get_config()
                 logger.info(f"Config updated successfully. New state: {new_config}")
 
-                flash('Configuration updated successfully! (Will reset on container restart)', 'success')
+                flash('Configuration updated successfully!', 'success')
             except Exception as e:
                 flash(f'Error updating config: {str(e)}', 'error')
                 logger.error(f"Config update failed: {e}")
 
         return redirect('config')
 
+    config_manager.load_persisted_config()
     current_config = config_manager.get_config()
-    return render_template('config.html', config=current_config)
+    missing_config = not os.path.exists(CONFIG_PATH)
+    return render_template('config.html', config=current_config, missing_config=missing_config)
 
 
 @app.route('/logs')
@@ -73,6 +128,21 @@ def logs():
     log_lines = tail_file('logs/octobot.log', None)  # None = read entire file
     log_entries = group_log_entries(log_lines)
     return render_template('logs.html', log_entries=log_entries)
+
+@app.route('/logs/entries')
+@require_auth
+def logs_entries():
+    lines = request.args.get('lines', default='200')
+    try:
+        line_count = int(lines)
+        if line_count <= 0:
+            line_count = 200
+    except ValueError:
+        line_count = 200
+
+    log_lines = tail_file('logs/octobot.log', line_count)
+    log_entries = group_log_entries(log_lines)
+    return jsonify(log_entries)
 
 
 def tail_file(filepath, n):

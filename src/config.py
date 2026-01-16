@@ -29,6 +29,6 @@ ONE_OFF_EXECUTED = False
 DRY_RUN = os.getenv("DRY_RUN", "false") in ["true", "True", "1"]
 
 # Web UI authentication
-WEB_USERNAME = os.getenv("WEB_USERNAME", "admin")
-WEB_PASSWORD = os.getenv("WEB_PASSWORD", "admin")
+WEB_USERNAME = os.getenv("WEB_USERNAME", "")
+WEB_PASSWORD = os.getenv("WEB_PASSWORD", "")
 WEB_PORT = int(os.getenv("WEB_PORT", 5050))
