@@ -13,35 +13,11 @@ version: v1.0.5
 slug: octopus_minmax_bot
 startup: application
 init: false
+map:
+  - addon_config:rw
 description: A bot to automatically compare and switch smart electricity tariffs on Octopus Energy
 arch:
   - armhf
   - armv7
   - amd64
   - aarch64
-options:
-  API_KEY: "API KEY HERE"
-  ACC_NUMBER: "ACC NUMBER HERE"
-  EXECUTION_TIME: "23:00"
-  SWITCH_THRESHOLD: 2
-  ONE_OFF: false
-  DRY_RUN: false
-  NOTIFICATION_URLS: ""
-  TARIFFS: "agile,go,flexible"
-  TZ: "Europe/London"
-  BATCH_NOTIFICATIONS: false
-  WEB_USERNAME: "admin"
-  WEB_PASSWORD: "admin"
-schema:
-  API_KEY: str
-  ACC_NUMBER: str
-  EXECUTION_TIME: str
-  SWITCH_THRESHOLD: float
-  ONE_OFF: bool
-  DRY_RUN: bool
-  NOTIFICATION_URLS: str
-  TARIFFS: str
-  TZ: str
-  BATCH_NOTIFICATIONS: bool
-  WEB_USERNAME: str
-  WEB_PASSWORD: password

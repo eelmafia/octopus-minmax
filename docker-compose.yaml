@@ -9,15 +9,6 @@ services:
       - "5050:5050"
     volumes:
       - ./logs:/app/logs
+      - ./config:/config
     environment:
       - TZ=Europe/London
-      - ACC_NUMBER=<your_account_number>
-      - API_KEY=<your_api_key>
-      - EXECUTION_TIME=23:00
-      - SWITCH_THRESHOLD=2
-      - NOTIFICATION_URLS=<your_apprise_notification_urls>
-      - ONE_OFF=false
-      - DRY_RUN=false
-      - TARIFFS=go,agile,flexible
-      - WEB_USERNAME=admin
-      - WEB_PASSWORD=admin # not meant to be secure
