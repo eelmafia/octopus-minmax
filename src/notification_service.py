@@ -16,6 +16,12 @@ class NotificationService:
         self.batch_enabled = batch_enabled
         self._apprise: Optional[Apprise] = None
 
+    def _sync_config(self) -> None:
+        latest_urls = config.NOTIFICATION_URLS
+        if latest_urls != self.notification_urls:
+            self.notification_urls = latest_urls
+            self._apprise = None
+        self.batch_enabled = config.BATCH_NOTIFICATIONS
 
     def _get_apprise(self) -> Optional[Apprise]:
         if self._apprise is None:
@@ -34,6 +40,7 @@ class NotificationService:
             is_error (bool, optional): Whether the message is a stack trace. Defaults to False.
             batchable (bool, optional): Whether the message can be batched.
         """
+        self._sync_config()
         apprise = self._get_apprise()
         if not apprise:
             logger.warning("No notification services configured. Check config.NOTIFICATION_URLS.")
@@ -60,6 +67,7 @@ class NotificationService:
             return success
 
     def send_batch_notification(self) -> bool:
+        self._sync_config()
         if not self.batch_notifications:
             logger.debug("No notifications in batch to send")
             return True
