@@ -7,9 +7,7 @@
         <a href="." class="text-blue-400 hover:text-blue-300">← Back to Dashboard</a>
     </div>
 
-    <div class="bg-yellow-900 border border-yellow-700 text-yellow-100 rounded-lg p-4 mb-6">
-        ⚠️ <strong>Note:</strong> Config changes apply immediately but reset on container restart. Update docker-compose.yaml for permanent changes.
-    </div>
+    <p class="text-gray-500 text-sm mb-6">* Required fields</p>
 
     <form method="POST" class="space-y-6">
         <!-- API Settings -->
@@ -18,20 +16,23 @@
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-gray-300 mb-2" for="api_key">API Key</label>
+                    <label class="block text-gray-300 mb-2" for="api_key">API Key *</label>
                     <input type="text" id="api_key" name="api_key" value="{{ config.api_key }}"
+                           placeholder="<your_api_key>"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
                 </div>
 
                 <div>
-                    <label class="block text-gray-300 mb-2" for="acc_number">Account Number</label>
+                    <label class="block text-gray-300 mb-2" for="acc_number">Account Number *</label>
                     <input type="text" id="acc_number" name="acc_number" value="{{ config.acc_number }}"
+                           placeholder="<your_account_number>"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
                 </div>
 
                 <div>
-                    <label class="block text-gray-300 mb-2" for="base_url">Base URL</label>
+                    <label class="block text-gray-300 mb-2" for="base_url">Base URL *</label>
                     <input type="text" id="base_url" name="base_url" value="{{ config.base_url }}"
+                           placeholder="https://api.octopus.energy/v1"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
                 </div>
             </div>
@@ -43,15 +44,16 @@
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-gray-300 mb-2" for="execution_time">Execution Time (HH:MM)</label>
-                    <input type="text" id="execution_time" name="execution_time" value="{{ config.execution_time }}"
+                    <label class="block text-gray-300 mb-2" for="execution_time">Execution Time (HH:MM) *</label>
+                    <input type="time" id="execution_time" name="execution_time" value="{{ config.execution_time }}"
                            placeholder="23:00"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
                 </div>
 
                 <div>
-                    <label class="block text-gray-300 mb-2" for="switch_threshold">Switch Threshold (pence)</label>
-                    <input type="number" id="switch_threshold" name="switch_threshold" value="{{ config.switch_threshold }}"
+                    <label class="block text-gray-300 mb-2" for="switch_threshold">Switch Threshold (pence) *</label>
+                    <input type="number" id="switch_threshold" name="switch_threshold" value="{{ config.switch_threshold }}" step="1"
+                           placeholder="2"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
                 </div>
 
@@ -73,8 +75,8 @@
             <h3 class="text-xl font-bold text-gray-100 mb-4">Tariff Settings</h3>
 
             <div>
-                <label class="block text-gray-300 mb-2" for="tariffs">Tariffs (comma-separated)</label>
-                <input type="text" id="tariffs" name="tariffs" value="{{ config.tariffs }}"
+                <label class="block text-gray-300 mb-2" for="tariffs">Tariffs (comma-separated) *</label>
+                <input type="text" id="tariffs" name="tariffs" value="{{ '' if missing_config else config.tariffs }}"
                        placeholder="go,agile,flexible"
                        class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
                 <p class="text-gray-500 text-sm mt-2">Valid: go, agile, cosy, flexible</p>
@@ -89,6 +91,7 @@
                 <div>
                     <label class="block text-gray-300 mb-2" for="notification_urls">Notification URLs (Apprise)</label>
                     <textarea id="notification_urls" name="notification_urls" rows="3"
+                              placeholder="<apprise_notification_urls>"
                               class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">{{ config.notification_urls }}</textarea>
                     <p class="text-gray-500 text-sm mt-2">Comma-separated Apprise URLs</p>
                 </div>
@@ -97,6 +100,33 @@
                     <input type="checkbox" id="batch_notifications" name="batch_notifications" {% if config.batch_notifications %}checked{% endif %}
                            class="w-5 h-5 bg-gray-900 border border-gray-600 rounded">
                     <label class="ml-3 text-gray-300" for="batch_notifications">Batch Notifications</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Web Server Settings -->
+        <div class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+            <h3 class="text-xl font-bold text-gray-100 mb-4">Web Server</h3>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-gray-300 mb-2" for="web_username">Web Username *</label>
+                    <input type="text" id="web_username" name="web_username" value="{{ config.web_username or '' }}"
+                           class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 mb-2" for="web_password">Web Password</label>
+                    <div class="flex items-center gap-3">
+                        <input type="password" id="web_password" name="web_password" value=""
+                               class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
+                        <label class="flex items-center text-gray-300 text-sm whitespace-nowrap">
+                            <input id="web-password-toggle" type="checkbox" class="w-4 h-4 bg-gray-900 border border-gray-600 rounded mr-2">
+                            Show
+                        </label>
+                    </div>
+                    <p class="text-gray-500 text-sm mt-2">Changing the username and/or password will require you to log in again</p>
+                    <p class="text-gray-500 text-sm mt-2">Leave blank to keep the current password</p>
                 </div>
             </div>
         </div>
@@ -110,4 +140,15 @@
         </div>
     </form>
 </div>
+
+<script>
+    const webPasswordInput = document.getElementById('web_password');
+    const webPasswordToggle = document.getElementById('web-password-toggle');
+
+    if (webPasswordInput && webPasswordToggle) {
+        webPasswordToggle.addEventListener('change', function() {
+            webPasswordInput.type = webPasswordToggle.checked ? 'text' : 'password';
+        });
+    }
+</script>
 {% endblock %}
