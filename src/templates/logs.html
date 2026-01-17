@@ -68,7 +68,12 @@
     async function refreshLogs() {
         const wasAtBottom = isNearBottom(logContainer);
         try {
-            const response = await fetch(`/logs/entries?lines=200&level=${encodeURIComponent(logLevel.value)}`, { cache: 'no-store' });
+            const response = await fetch('/logs/entries', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                cache: 'no-store',
+                body: JSON.stringify({ lines: 200, level: logLevel.value })
+            });
             if (!response.ok) {
                 return;
             }

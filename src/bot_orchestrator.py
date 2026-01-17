@@ -36,6 +36,7 @@ class BotOrchestrator:
 
         while True:
             if config.ONE_OFF_RUN and not config.ONE_OFF_EXECUTED:
+                logger.info("One-off run starting.")
                 ns.send_notification(f"[{get_timestamp()}] Octobot {config.BOT_VERSION} - Running one-off comparison")
                 config_manager.reset_one_off_run()
                 self._run_tariff_compare()
@@ -49,6 +50,8 @@ class BotOrchestrator:
                     ns.send_notification(f"[{get_timestamp()}] Octobot {config.BOT_VERSION} - Initiating comparison in {delay/60:.1f} minutes")
                     time.sleep(delay)
                     self._run_tariff_compare()
+            else:
+                logger.info("One-off run already executed; skipping.")
 
             time.sleep(30)
 
@@ -241,6 +244,14 @@ class BotOrchestrator:
             'currenttariff': _comparison_payload(current),
             'comparisons': [_comparison_payload(c) for c in results.alternative_comparisons],
         }
+        logger.debug(
+            "Last run payload: action=%s reason=%s cheapest=%s savings_pence=%s threshold_pence=%s",
+            payload['decision']['action'],
+            payload['decision']['reason'],
+            payload['decision']['cheapest_tariff_id'],
+            payload['decision']['savings_pence'],
+            payload['decision']['threshold_pence'],
+        )
         config_manager.persist_last_run(payload)
         mqtt_publisher.publish_results(payload)
 

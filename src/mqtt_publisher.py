@@ -137,6 +137,8 @@ def publish_results(payload):
         )
 
         _publish(client, state_topic, json.dumps(state_payload), retain=True)
+        logger.debug("MQTT publish succeeded: %s", state_topic)
+        logger.info("MQTT discovery published: 11 sensors")
         return True
     except Exception as exc:
         logger.warning("MQTT publish failed: %s", exc)
