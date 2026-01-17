@@ -158,6 +158,13 @@ def _persist_config():
         logger.warning("Failed to persist config to %s: %s", _CONFIG_PATH, exc)
 
 
+def reset_one_off_run():
+    with _config_lock:
+        config.ONE_OFF_RUN = False
+        config.ONE_OFF_EXECUTED = True
+        _persist_config()
+
+
 def persist_last_run(payload):
     if not isinstance(payload, dict):
         return
