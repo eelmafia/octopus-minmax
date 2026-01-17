@@ -1,6 +1,7 @@
 ---
 name: Octopus MinMax Bot
-image: eelmafia/octopus-minmax-bot
+build:
+  dockerfile: dockerfile
 url: https://github.com/eelmafia/octopus-minmax
 ingress: true
 ingress_port: 5050
