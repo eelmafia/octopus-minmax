@@ -11,6 +11,9 @@ _CONFIG_PATH = os.getenv("OCTOBOT_CONFIG_PATH", "/config/config.json")
 _LASTRUN_PATH = os.path.join(os.path.dirname(_CONFIG_PATH), "lastrun.json")
 logger = logging.getLogger('octobot.config_manager')
 
+def _env_overrides(key):
+    return os.getenv(key) not in (None, "")
+
 def _coerce_bool(value, default=False):
     if isinstance(value, bool):
         return value
@@ -24,34 +27,49 @@ def _apply_persisted_values(values):
     if not isinstance(values, dict):
         return
 
-    if 'API_KEY' in values:
+    if 'API_KEY' in values and not _env_overrides('API_KEY'):
         config.API_KEY = values['API_KEY']
-    if 'ACC_NUMBER' in values:
+    if 'ACC_NUMBER' in values and not _env_overrides('ACC_NUMBER'):
         config.ACC_NUMBER = values['ACC_NUMBER']
-    if 'BASE_URL' in values:
+    if 'BASE_URL' in values and not _env_overrides('BASE_URL'):
         config.BASE_URL = values['BASE_URL']
-    if 'EXECUTION_TIME' in values:
+    if 'EXECUTION_TIME' in values and not _env_overrides('EXECUTION_TIME'):
         config.EXECUTION_TIME = values['EXECUTION_TIME']
-    if 'SWITCH_THRESHOLD' in values:
+    if 'SWITCH_THRESHOLD' in values and not _env_overrides('SWITCH_THRESHOLD'):
         try:
             config.SWITCH_THRESHOLD = int(values['SWITCH_THRESHOLD'])
         except (TypeError, ValueError):
             pass
-    if 'TARIFFS' in values:
+    if 'TARIFFS' in values and not _env_overrides('TARIFFS'):
         config.TARIFFS = values['TARIFFS']
-    if 'ONE_OFF' in values:
+    if 'ONE_OFF' in values and not _env_overrides('ONE_OFF'):
         config.ONE_OFF_RUN = _coerce_bool(values['ONE_OFF'], config.ONE_OFF_RUN)
-    if 'DRY_RUN' in values:
+    if 'DRY_RUN' in values and not _env_overrides('DRY_RUN'):
         config.DRY_RUN = _coerce_bool(values['DRY_RUN'], config.DRY_RUN)
-    if 'NOTIFICATION_URLS' in values:
+    if 'NOTIFICATION_URLS' in values and not _env_overrides('NOTIFICATION_URLS'):
         config.NOTIFICATION_URLS = values['NOTIFICATION_URLS']
-    if 'BATCH_NOTIFICATIONS' in values:
+    if 'BATCH_NOTIFICATIONS' in values and not _env_overrides('BATCH_NOTIFICATIONS'):
         config.BATCH_NOTIFICATIONS = _coerce_bool(values['BATCH_NOTIFICATIONS'], config.BATCH_NOTIFICATIONS)
-    if 'ONLY_RESULTS_NOTIFICATIONS' in values:
+    if 'ONLY_RESULTS_NOTIFICATIONS' in values and not _env_overrides('ONLY_RESULTS_NOTIFICATIONS'):
         config.ONLY_RESULTS_NOTIFICATIONS = _coerce_bool(values['ONLY_RESULTS_NOTIFICATIONS'], config.ONLY_RESULTS_NOTIFICATIONS)
-    if 'WEB_USERNAME' in values:
+    if 'MQTT_ENABLED' in values and not _env_overrides('MQTT_ENABLED'):
+        config.MQTT_ENABLED = _coerce_bool(values['MQTT_ENABLED'], config.MQTT_ENABLED)
+    if 'MQTT_HOST' in values and not _env_overrides('MQTT_HOST'):
+        config.MQTT_HOST = values['MQTT_HOST']
+    if 'MQTT_PORT' in values and not _env_overrides('MQTT_PORT'):
+        try:
+            config.MQTT_PORT = int(values['MQTT_PORT'])
+        except (TypeError, ValueError):
+            pass
+    if 'MQTT_USERNAME' in values and not _env_overrides('MQTT_USERNAME'):
+        config.MQTT_USERNAME = values['MQTT_USERNAME']
+    if 'MQTT_PASSWORD' in values and not _env_overrides('MQTT_PASSWORD'):
+        config.MQTT_PASSWORD = values['MQTT_PASSWORD']
+    if 'MQTT_TOPIC' in values and not _env_overrides('MQTT_TOPIC'):
+        config.MQTT_TOPIC = values['MQTT_TOPIC']
+    if 'WEB_USERNAME' in values and not _env_overrides('WEB_USERNAME'):
         config.WEB_USERNAME = values['WEB_USERNAME']
-    if 'WEB_PASSWORD' in values:
+    if 'WEB_PASSWORD' in values and not _env_overrides('WEB_PASSWORD'):
         config.WEB_PASSWORD = values['WEB_PASSWORD']
 
 def load_persisted_config():
@@ -89,6 +107,12 @@ def get_config():
             'notification_urls': config.NOTIFICATION_URLS,
             'batch_notifications': config.BATCH_NOTIFICATIONS,
             'only_results_notifications': config.ONLY_RESULTS_NOTIFICATIONS,
+            'mqtt_enabled': config.MQTT_ENABLED,
+            'mqtt_host': config.MQTT_HOST,
+            'mqtt_port': config.MQTT_PORT,
+            'mqtt_username': config.MQTT_USERNAME,
+            'mqtt_password': config.MQTT_PASSWORD,
+            'mqtt_topic': config.MQTT_TOPIC,
             'web_username': config.WEB_USERNAME,
             'web_password': "",
         }
@@ -131,6 +155,20 @@ def update_config(new_values):
             config.ONLY_RESULTS_NOTIFICATIONS = str(new_values['only_results_notifications']).lower() in ['true', '1', 'yes', 'on']
         else:
             config.ONLY_RESULTS_NOTIFICATIONS = False
+        if 'mqtt_enabled' in new_values:
+            config.MQTT_ENABLED = str(new_values['mqtt_enabled']).lower() in ['true', '1', 'yes', 'on']
+        else:
+            config.MQTT_ENABLED = False
+        if 'mqtt_host' in new_values:
+            config.MQTT_HOST = new_values['mqtt_host']
+        if 'mqtt_port' in new_values and new_values['mqtt_port']:
+            config.MQTT_PORT = int(new_values['mqtt_port'])
+        if 'mqtt_username' in new_values:
+            config.MQTT_USERNAME = new_values['mqtt_username']
+        if 'mqtt_password' in new_values:
+            config.MQTT_PASSWORD = new_values['mqtt_password']
+        if 'mqtt_topic' in new_values:
+            config.MQTT_TOPIC = new_values['mqtt_topic']
         if 'web_username' in new_values and new_values['web_username']:
             config.WEB_USERNAME = new_values['web_username']
         if 'web_password' in new_values and new_values['web_password']:
@@ -154,6 +192,12 @@ def _persist_config():
         'NOTIFICATION_URLS': config.NOTIFICATION_URLS,
         'BATCH_NOTIFICATIONS': config.BATCH_NOTIFICATIONS,
         'ONLY_RESULTS_NOTIFICATIONS': config.ONLY_RESULTS_NOTIFICATIONS,
+        'MQTT_ENABLED': config.MQTT_ENABLED,
+        'MQTT_HOST': config.MQTT_HOST,
+        'MQTT_PORT': config.MQTT_PORT,
+        'MQTT_USERNAME': config.MQTT_USERNAME,
+        'MQTT_PASSWORD': config.MQTT_PASSWORD,
+        'MQTT_TOPIC': config.MQTT_TOPIC,
         'WEB_USERNAME': config.WEB_USERNAME,
         'WEB_PASSWORD': config.WEB_PASSWORD,
     }
@@ -216,6 +260,22 @@ def validate_config(config_dict):
         errors.append("Tariffs are required")
     if not config_dict.get('web_username'):
         errors.append("Web username is required")
+
+    mqtt_enabled = str(config_dict.get('mqtt_enabled', '')).lower() in ['true', '1', 'yes', 'on']
+    if mqtt_enabled:
+        if not config_dict.get('mqtt_host'):
+            errors.append("MQTT host is required when MQTT is enabled")
+        if not config_dict.get('mqtt_port'):
+            errors.append("MQTT port is required when MQTT is enabled")
+        else:
+            try:
+                val = int(config_dict['mqtt_port'])
+                if val <= 0:
+                    errors.append("MQTT port must be a positive number")
+            except ValueError:
+                errors.append("MQTT port must be a number")
+        if not config_dict.get('mqtt_topic'):
+            errors.append("MQTT topic is required when MQTT is enabled")
 
     # Validate execution_time format (HH:MM)
     if 'execution_time' in config_dict:
