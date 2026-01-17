@@ -465,8 +465,9 @@
             mqttTestStatus.textContent = 'Testing...';
             mqttTestStatus.className = 'text-sm text-gray-300';
             try {
-                const response = await fetch('/mqtt/test', {
+                const response = await fetch('mqtt/test', {
                     method: 'POST',
+                    credentials: 'same-origin',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         mqtt_host: mqttHostInput.value,
@@ -480,7 +481,23 @@
                         mqtt_client_key: mqttClientKey ? mqttClientKey.value : ''
                     })
                 });
-                const data = await response.json();
+                let data = { ok: response.ok, message: '' };
+                const contentType = response.headers.get('content-type') || '';
+                if (contentType.includes('application/json')) {
+                    try {
+                        data = await response.json();
+                    } catch (parseError) {
+                        data = { ok: false, message: `Unexpected response (${response.status})` };
+                    }
+                } else {
+                    const text = await response.text();
+                    data = { ok: response.ok, message: text || `Unexpected response (${response.status})` };
+                }
+                if ((response.status === 401 || response.status === 403) && !response.ok) {
+                    data = { ok: false, message: 'Authentication required. Reload and sign in.' };
+                } else if (!response.ok && data.ok) {
+                    data.ok = false;
+                }
                 mqttTestStatus.textContent = data.message || 'Unknown response';
                 mqttTestStatus.className = data.ok ? 'text-sm text-green-300' : 'text-sm text-red-300';
             } catch (error) {
