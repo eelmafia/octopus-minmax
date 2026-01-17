@@ -1,6 +1,7 @@
 import json
 import logging
 import re
+import ssl
 
 import config
 import paho.mqtt.client as mqtt
@@ -97,6 +98,18 @@ def publish_results(payload):
     client = mqtt.Client()
     if config.MQTT_USERNAME or config.MQTT_PASSWORD:
         client.username_pw_set(config.MQTT_USERNAME or None, config.MQTT_PASSWORD or None)
+    if config.MQTT_USE_TLS:
+        if config.MQTT_CA_CERT or config.MQTT_CLIENT_CERT or config.MQTT_CLIENT_KEY:
+            client.tls_set(
+                ca_certs=config.MQTT_CA_CERT or None,
+                certfile=config.MQTT_CLIENT_CERT or None,
+                keyfile=config.MQTT_CLIENT_KEY or None,
+                tls_version=ssl.PROTOCOL_TLS_CLIENT,
+            )
+        else:
+            client.tls_set(tls_version=ssl.PROTOCOL_TLS_CLIENT)
+        if config.MQTT_TLS_INSECURE:
+            client.tls_insecure_set(True)
 
     try:
         client.connect(config.MQTT_HOST, config.MQTT_PORT, keepalive=10)

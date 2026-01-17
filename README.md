@@ -79,6 +79,11 @@ Full list of environment variables;
 | `MQTT_USERNAME` | MQTT username (optional) | `addons` |
 | `MQTT_PASSWORD` | MQTT password (optional) | `secret` |
 | `MQTT_TOPIC` | Base MQTT topic for results | `octobot/results` |
+| `MQTT_USE_TLS` | Enable TLS for MQTT | `true` |
+| `MQTT_TLS_INSECURE` | Allow self-signed certificates | `false` |
+| `MQTT_CA_CERT` | Path to CA certificate | `/ssl/ca.crt` |
+| `MQTT_CLIENT_CERT` | Path to client certificate (optional) | `/ssl/client.crt` |
+| `MQTT_CLIENT_KEY` | Path to client key (optional) | `/ssl/client.key` |
 | `WEB_USERNAME` | Web UI username (non-ingress) | `admin` |
 | `WEB_PASSWORD` | Web UI password (non-ingress) | `yourpassword` |
 | `WEB_PORT` | Web UI port | `5050` |

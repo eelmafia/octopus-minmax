@@ -67,6 +67,16 @@ def _apply_persisted_values(values):
         config.MQTT_PASSWORD = values['MQTT_PASSWORD']
     if 'MQTT_TOPIC' in values and not _env_overrides('MQTT_TOPIC'):
         config.MQTT_TOPIC = values['MQTT_TOPIC']
+    if 'MQTT_USE_TLS' in values and not _env_overrides('MQTT_USE_TLS'):
+        config.MQTT_USE_TLS = _coerce_bool(values['MQTT_USE_TLS'], config.MQTT_USE_TLS)
+    if 'MQTT_TLS_INSECURE' in values and not _env_overrides('MQTT_TLS_INSECURE'):
+        config.MQTT_TLS_INSECURE = _coerce_bool(values['MQTT_TLS_INSECURE'], config.MQTT_TLS_INSECURE)
+    if 'MQTT_CA_CERT' in values and not _env_overrides('MQTT_CA_CERT'):
+        config.MQTT_CA_CERT = values['MQTT_CA_CERT']
+    if 'MQTT_CLIENT_CERT' in values and not _env_overrides('MQTT_CLIENT_CERT'):
+        config.MQTT_CLIENT_CERT = values['MQTT_CLIENT_CERT']
+    if 'MQTT_CLIENT_KEY' in values and not _env_overrides('MQTT_CLIENT_KEY'):
+        config.MQTT_CLIENT_KEY = values['MQTT_CLIENT_KEY']
     if 'WEB_USERNAME' in values and not _env_overrides('WEB_USERNAME'):
         config.WEB_USERNAME = values['WEB_USERNAME']
     if 'WEB_PASSWORD' in values and not _env_overrides('WEB_PASSWORD'):
@@ -113,6 +123,11 @@ def get_config():
             'mqtt_username': config.MQTT_USERNAME,
             'mqtt_password': config.MQTT_PASSWORD,
             'mqtt_topic': config.MQTT_TOPIC,
+            'mqtt_use_tls': config.MQTT_USE_TLS,
+            'mqtt_tls_insecure': config.MQTT_TLS_INSECURE,
+            'mqtt_ca_cert': config.MQTT_CA_CERT,
+            'mqtt_client_cert': config.MQTT_CLIENT_CERT,
+            'mqtt_client_key': config.MQTT_CLIENT_KEY,
             'web_username': config.WEB_USERNAME,
             'web_password': "",
         }
@@ -169,6 +184,20 @@ def update_config(new_values):
             config.MQTT_PASSWORD = new_values['mqtt_password']
         if 'mqtt_topic' in new_values:
             config.MQTT_TOPIC = new_values['mqtt_topic']
+        if 'mqtt_use_tls' in new_values:
+            config.MQTT_USE_TLS = str(new_values['mqtt_use_tls']).lower() in ['true', '1', 'yes', 'on']
+        else:
+            config.MQTT_USE_TLS = False
+        if 'mqtt_tls_insecure' in new_values:
+            config.MQTT_TLS_INSECURE = str(new_values['mqtt_tls_insecure']).lower() in ['true', '1', 'yes', 'on']
+        else:
+            config.MQTT_TLS_INSECURE = False
+        if 'mqtt_ca_cert' in new_values:
+            config.MQTT_CA_CERT = new_values['mqtt_ca_cert']
+        if 'mqtt_client_cert' in new_values:
+            config.MQTT_CLIENT_CERT = new_values['mqtt_client_cert']
+        if 'mqtt_client_key' in new_values:
+            config.MQTT_CLIENT_KEY = new_values['mqtt_client_key']
         if 'web_username' in new_values and new_values['web_username']:
             config.WEB_USERNAME = new_values['web_username']
         if 'web_password' in new_values and new_values['web_password']:
@@ -198,6 +227,11 @@ def _persist_config():
         'MQTT_USERNAME': config.MQTT_USERNAME,
         'MQTT_PASSWORD': config.MQTT_PASSWORD,
         'MQTT_TOPIC': config.MQTT_TOPIC,
+        'MQTT_USE_TLS': config.MQTT_USE_TLS,
+        'MQTT_TLS_INSECURE': config.MQTT_TLS_INSECURE,
+        'MQTT_CA_CERT': config.MQTT_CA_CERT,
+        'MQTT_CLIENT_CERT': config.MQTT_CLIENT_CERT,
+        'MQTT_CLIENT_KEY': config.MQTT_CLIENT_KEY,
         'WEB_USERNAME': config.WEB_USERNAME,
         'WEB_PASSWORD': config.WEB_PASSWORD,
     }

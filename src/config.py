@@ -22,6 +22,11 @@ MQTT_PORT = int(os.getenv("MQTT_PORT", 1883))
 MQTT_USERNAME = os.getenv("MQTT_USERNAME", "")
 MQTT_PASSWORD = os.getenv("MQTT_PASSWORD", "")
 MQTT_TOPIC = os.getenv("MQTT_TOPIC", "")
+MQTT_USE_TLS = os.getenv("MQTT_USE_TLS", "false") in ["true", "True", "1"]
+MQTT_TLS_INSECURE = os.getenv("MQTT_TLS_INSECURE", "false") in ["true", "True", "1"]
+MQTT_CA_CERT = os.getenv("MQTT_CA_CERT", "")
+MQTT_CLIENT_CERT = os.getenv("MQTT_CLIENT_CERT", "")
+MQTT_CLIENT_KEY = os.getenv("MQTT_CLIENT_KEY", "")
 
 EXECUTION_TIME = os.getenv("EXECUTION_TIME", "23:00")
 

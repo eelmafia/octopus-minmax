@@ -167,3 +167,4 @@ cython_debug/
 
 .DS_Store
 /config
+/ssl

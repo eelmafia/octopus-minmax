@@ -6,6 +6,7 @@ import logging
 import os
 from datetime import datetime
 from werkzeug.security import check_password_hash
+import ssl
 import threading
 try:
     import paho.mqtt.client as mqtt
@@ -287,6 +288,11 @@ def mqtt_test():
     port_raw = (payload or {}).get('mqtt_port') or config.MQTT_PORT
     username = (payload or {}).get('mqtt_username') or config.MQTT_USERNAME
     password = (payload or {}).get('mqtt_password') or config.MQTT_PASSWORD
+    use_tls = str((payload or {}).get('mqtt_use_tls') or config.MQTT_USE_TLS).lower() in ['true', '1', 'yes', 'on']
+    tls_insecure = str((payload or {}).get('mqtt_tls_insecure') or config.MQTT_TLS_INSECURE).lower() in ['true', '1', 'yes', 'on']
+    ca_cert = (payload or {}).get('mqtt_ca_cert') or config.MQTT_CA_CERT
+    client_cert = (payload or {}).get('mqtt_client_cert') or config.MQTT_CLIENT_CERT
+    client_key = (payload or {}).get('mqtt_client_key') or config.MQTT_CLIENT_KEY
     try:
         port = int(port_raw)
     except (TypeError, ValueError):
@@ -314,6 +320,18 @@ def mqtt_test():
         client = mqtt.Client()
         if username or password:
             client.username_pw_set(username or None, password or None)
+        if use_tls:
+            if ca_cert or client_cert or client_key:
+                client.tls_set(
+                    ca_certs=ca_cert or None,
+                    certfile=client_cert or None,
+                    keyfile=client_key or None,
+                    tls_version=ssl.PROTOCOL_TLS_CLIENT,
+                )
+            else:
+                client.tls_set(tls_version=ssl.PROTOCOL_TLS_CLIENT)
+            if tls_insecure:
+                client.tls_insecure_set(True)
         client.on_connect = _on_connect
         client.on_disconnect = _on_disconnect
         client.connect(host, port, keepalive=10)
