@@ -1,8 +1,9 @@
 import time
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import List, Dict, Optional, Tuple
 import random
 import config
+import config_manager
 from account_info import AccountInfo
 from account_manager import AccountManager
 from queries import *
@@ -81,7 +82,9 @@ class BotOrchestrator:
 
             self._compare_and_switch()
         except Exception as e:
-            ns.send_notification(message=str(e), title="Octobot Error", is_error=True)
+            error_text = str(e).strip() or repr(e) or "Unknown error"
+            logger.exception("Comparison failed: %s", error_text)
+            ns.send_notification(message=error_text, title="Octobot Error", is_error=True)
         finally:
             if config.BATCH_NOTIFICATIONS:
                 ns.send_batch_notification()
@@ -126,13 +129,19 @@ class BotOrchestrator:
         summary = self._format_comparison_summary(results)
         ns.send_notification(message=summary)
 
+        switched = False
+        switch_error = False
         if results.should_switch:
             switch_message = f"Initiating Switch to {results.cheapest_tariff.display_name}"
             ns.send_notification(switch_message)
             if config.DRY_RUN:
                 ns.send_notification("DRY RUN: Not going through with switch today.")
             else:
-                self._execute_switch(results.cheapest_tariff, account_info)
+                try:
+                    switched = self._execute_switch(results.cheapest_tariff, account_info)
+                except Exception as exc:
+                    switch_error = True
+                    ns.send_notification(f"ERROR: Switch failed: {exc}")
         else:
             if results.cheapest_tariff == results.current_tariff_comparison.tariff:
                 message = (f"You are already on the cheapest tariff: "
@@ -144,16 +153,86 @@ class BotOrchestrator:
                            f"threshold of £{config.SWITCH_THRESHOLD / 100:.2f}")
             ns.send_notification(message)
 
-    def _execute_switch(self, target_tariff: Tariff, account_info: AccountInfo) -> None:
+        self._persist_last_run(results, switched, switch_error)
+
+    def _persist_last_run(self, results: ComparisonResult, switched: bool, switch_error: bool) -> None:
+        def _comparison_payload(comparison):
+            payload = {
+                'id': comparison.tariff.id,
+                'name': comparison.tariff.display_name,
+                'valid': comparison.is_valid,
+            }
+            if comparison.is_valid:
+                payload.update({
+                    'total_pence': comparison.cost_breakdown.total_cost,
+                    'consumptioncost_pence': comparison.cost_breakdown.consumption_cost,
+                    'standingcharge_pence': comparison.cost_breakdown.standing_charge,
+                })
+            else:
+                payload['error'] = comparison.error
+            return payload
+
+        current = results.current_tariff_comparison
+        total_consumption_kwh = None
+        if current.is_valid:
+            total_consumption_kwh = current.cost_breakdown.total_kwh
+
+        def _decision_reason():
+            if switch_error:
+                return "error"
+            if switched:
+                return None
+            if config.DRY_RUN and results.should_switch:
+                return "dry_run"
+            if results.cheapest_tariff == current.tariff:
+                return "already_cheapest"
+            return "threshold_not_met"
+
+        def _comparison_for_tariff(tariff):
+            if tariff is None:
+                return None
+            if current.tariff == tariff:
+                return current
+            return next((c for c in results.alternative_comparisons if c.tariff == tariff), None)
+
+        chosen_tariff = results.cheapest_tariff if switched else current.tariff
+        chosen_comparison = _comparison_for_tariff(chosen_tariff)
+        cost_today = None
+        if chosen_comparison and chosen_comparison.is_valid:
+            cost_today = {
+                'consumptioncost_pence': chosen_comparison.cost_breakdown.consumption_cost,
+                'standingcharge_pence': chosen_comparison.cost_breakdown.standing_charge,
+                'totalcost_pence': chosen_comparison.cost_breakdown.total_cost,
+            }
+
+        payload = {
+            'decision': {
+                'action': "switched" if switched else "not_switched",
+                'reason': _decision_reason(),
+                'dry_run': config.DRY_RUN,
+                'savings_pence': results.potential_savings,
+                'threshold_pence': config.SWITCH_THRESHOLD,
+                'cheapest_tariff_id': results.cheapest_tariff.id if results.cheapest_tariff else None,
+                'cost_today': cost_today,
+            },
+            'datetime': datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            'totalconsumption_kwh': total_consumption_kwh,
+            'currenttariff': _comparison_payload(current),
+            'comparisons': [_comparison_payload(c) for c in results.alternative_comparisons],
+        }
+        config_manager.persist_last_run(payload)
+
+    def _execute_switch(self, target_tariff: Tariff, account_info: AccountInfo) -> bool:
         ns = self.notification_service
 
         if not target_tariff.product_code:
             ns.send_notification("ERROR: product_code is missing.")
+            return False
 
         enrolment_id = self.account_manager.initiate_tariff_switch(target_tariff.product_code)
         if not enrolment_id:
             ns.send_notification("ERROR: Couldn't get enrolment ID")
-            return
+            return False
 
         wait_time = 120
         ns.send_notification(f"Tariff switch requested successfully. Waiting {wait_time}s before attempting to accept new agreement.")
@@ -176,3 +255,5 @@ class BotOrchestrator:
                     f"Please check your account and emails.\n"
                     f"https://octopus.energy/dashboard/new/accounts/{config.ACC_NUMBER}/messages"
                 )
+                return False
+        return True

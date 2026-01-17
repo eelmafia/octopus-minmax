@@ -64,7 +64,8 @@ def index():
     current_config = config_manager.get_config()
     tariffs_display = _format_tariffs(current_config.get('tariffs', ''))
     run_prefix = _next_run_prefix(current_config.get('execution_time', ''))
-    return render_template('index.html', missing_config=missing_config, config=current_config, tariffs_display=tariffs_display, run_prefix=run_prefix)
+    last_run_summary = _build_last_run_summary(config_manager.load_last_run())
+    return render_template('index.html', missing_config=missing_config, config=current_config, tariffs_display=tariffs_display, run_prefix=run_prefix, last_run_summary=last_run_summary)
 
 def _format_tariffs(value):
     items = [item.strip() for item in (value or '').split(',') if item.strip()]
@@ -87,6 +88,100 @@ def _next_run_prefix(value):
 
     now_time = datetime.now().time()
     return "tomorrow at" if now_time >= run_time else "today at"
+
+def _build_last_run_summary(last_run):
+    if not isinstance(last_run, dict):
+        return None
+    decision = last_run.get('decision')
+    if not isinstance(decision, dict):
+        return None
+    action = decision.get('action')
+    reason = decision.get('reason')
+    dry_run = bool(decision.get('dry_run'))
+    raw_datetime = last_run.get('datetime')
+    if not action or not raw_datetime:
+        return None
+
+    when_text = raw_datetime
+    try:
+        parsed = datetime.fromisoformat(raw_datetime.replace('Z', '+00:00'))
+        when_text = parsed.strftime("%d/%m/%Y %H:%M")
+    except ValueError:
+        pass
+
+    reason_map = {
+        'already_cheapest': "Already on the cheapest tariff.",
+        'dry_run': "Dry run.",
+        'threshold_not_met': "Savings below threshold.",
+        'error': "Switch failed.",
+    }
+    action_text = "Switched" if action == "switched" else "Did not switch"
+    reason_text = reason_map.get(reason, reason).rstrip(".") if reason else None
+    if action == "switched":
+        reason_text = None
+    if reason == "threshold_not_met":
+        savings_pence = decision.get('savings_pence')
+        threshold_pence = decision.get('threshold_pence')
+        if savings_pence is not None and threshold_pence is not None:
+            reason_text = f"Savings (£{savings_pence / 100:.2f}) below threshold (£{threshold_pence / 100:.2f})"
+            if dry_run:
+                reason_text = f"Dry run - {reason_text}."
+    if reason == "already_cheapest" and dry_run:
+        reason_text = f"Dry run - {reason_text}."
+    if reason == "dry_run":
+        savings_pence = decision.get('savings_pence')
+        threshold_pence = decision.get('threshold_pence')
+        if savings_pence is not None and threshold_pence is not None:
+            switch_phrase = "switch skipped" if savings_pence > threshold_pence else "switch would not have been attempted"
+            comparator = "above" if savings_pence > threshold_pence else "below"
+            reason_text = (
+                f"Dry run - {switch_phrase} - "
+                f"savings (£{savings_pence / 100:.2f}) were {comparator} threshold (£{threshold_pence / 100:.2f})"
+            )
+
+    cheapest_id = decision.get('cheapest_tariff_id')
+    tariff_name = None
+    if cheapest_id:
+        current = last_run.get('currenttariff')
+        if isinstance(current, dict) and current.get('id') == cheapest_id:
+            tariff_name = current.get('name')
+        else:
+            for comparison in last_run.get('comparisons', []):
+                if comparison.get('id') == cheapest_id:
+                    tariff_name = comparison.get('name')
+                    break
+    tariff_text = tariff_name or "Unknown"
+
+    cost_text = None
+    cost_today = decision.get('cost_today')
+    if isinstance(cost_today, dict):
+        total_pence = cost_today.get('totalcost_pence')
+        con_pence = cost_today.get('consumptioncost_pence')
+        sc_pence = cost_today.get('standingcharge_pence')
+        if total_pence is not None:
+            cost_text = f"£{total_pence / 100:.2f}"
+            if con_pence is not None and sc_pence is not None:
+                cost_text += f" (£{con_pence / 100:.2f} con + £{sc_pence / 100:.2f} s/c)"
+
+    summary = (
+        f"<strong>Outcome:</strong> {action_text}. "
+        f"<strong>Tariff:</strong> {tariff_text}."
+    )
+    if reason_text:
+        summary = f"{summary} <strong>Rationale:</strong> {reason_text}."
+
+    if action == "switched":
+        savings_pence = decision.get('savings_pence')
+        if savings_pence is not None:
+            summary = f"{summary} <strong>Savings:</strong> £{savings_pence / 100:.2f}."
+    if cost_text:
+        summary = f"{summary} <strong>Cost today:</strong> {cost_text}."
+    else:
+        summary = f"{summary}."
+    return {
+        'title': f"Last run: {when_text}",
+        'body': summary,
+    }
 
 
 @app.route('/config', methods=['GET', 'POST'])
