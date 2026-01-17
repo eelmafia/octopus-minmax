@@ -12,6 +12,8 @@ BASE_URL = os.getenv("BASE_URL", "https://api.octopus.energy/v1")
 NOTIFICATION_URLS = os.getenv("NOTIFICATION_URLS", "")
 # Whether to send all the notifications as a batch or individually
 BATCH_NOTIFICATIONS = os.getenv("BATCH_NOTIFICATIONS", "false") in ["true", "True", "1"]
+# When enabled, suppress all notifications except the final results summary.
+ONLY_RESULTS_NOTIFICATIONS = os.getenv("ONLY_RESULTS_NOTIFICATIONS", "false") in ["true", "True", "1"]
 
 EXECUTION_TIME = os.getenv("EXECUTION_TIME", "23:00")
 

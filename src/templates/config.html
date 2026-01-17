@@ -101,6 +101,11 @@
                            class="w-5 h-5 bg-gray-900 border border-gray-600 rounded">
                     <label class="ml-3 text-gray-300" for="batch_notifications">Batch Notifications</label>
                 </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="only_results_notifications" name="only_results_notifications" {% if config.only_results_notifications %}checked{% endif %}
+                           class="w-5 h-5 bg-gray-900 border border-gray-600 rounded">
+                    <label class="ml-3 text-gray-300" for="only_results_notifications">Only send notification for results</label>
+                </div>
             </div>
         </div>
 

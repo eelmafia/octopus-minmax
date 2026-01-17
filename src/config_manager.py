@@ -47,6 +47,8 @@ def _apply_persisted_values(values):
         config.NOTIFICATION_URLS = values['NOTIFICATION_URLS']
     if 'BATCH_NOTIFICATIONS' in values:
         config.BATCH_NOTIFICATIONS = _coerce_bool(values['BATCH_NOTIFICATIONS'], config.BATCH_NOTIFICATIONS)
+    if 'ONLY_RESULTS_NOTIFICATIONS' in values:
+        config.ONLY_RESULTS_NOTIFICATIONS = _coerce_bool(values['ONLY_RESULTS_NOTIFICATIONS'], config.ONLY_RESULTS_NOTIFICATIONS)
     if 'WEB_USERNAME' in values:
         config.WEB_USERNAME = values['WEB_USERNAME']
     if 'WEB_PASSWORD' in values:
@@ -86,6 +88,7 @@ def get_config():
             'dry_run': config.DRY_RUN,
             'notification_urls': config.NOTIFICATION_URLS,
             'batch_notifications': config.BATCH_NOTIFICATIONS,
+            'only_results_notifications': config.ONLY_RESULTS_NOTIFICATIONS,
             'web_username': config.WEB_USERNAME,
             'web_password': "",
         }
@@ -124,6 +127,10 @@ def update_config(new_values):
         else:
             # Checkbox not checked means False
             config.BATCH_NOTIFICATIONS = False
+        if 'only_results_notifications' in new_values:
+            config.ONLY_RESULTS_NOTIFICATIONS = str(new_values['only_results_notifications']).lower() in ['true', '1', 'yes', 'on']
+        else:
+            config.ONLY_RESULTS_NOTIFICATIONS = False
         if 'web_username' in new_values and new_values['web_username']:
             config.WEB_USERNAME = new_values['web_username']
         if 'web_password' in new_values and new_values['web_password']:
@@ -146,6 +153,7 @@ def _persist_config():
         'DRY_RUN': config.DRY_RUN,
         'NOTIFICATION_URLS': config.NOTIFICATION_URLS,
         'BATCH_NOTIFICATIONS': config.BATCH_NOTIFICATIONS,
+        'ONLY_RESULTS_NOTIFICATIONS': config.ONLY_RESULTS_NOTIFICATIONS,
         'WEB_USERNAME': config.WEB_USERNAME,
         'WEB_PASSWORD': config.WEB_PASSWORD,
     }
