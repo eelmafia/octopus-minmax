@@ -20,6 +20,12 @@
             <div class="mt-2">This is a dry run, no switch will occur.</div>
         {% endif %}
     </div>
+        {% if last_run_summary %}
+    <div class="w-full max-w-4xl mb-8 bg-gray-800 border border-gray-600 text-gray-100 rounded-lg p-4 text-center">
+        <div class="text-sm font-semibold uppercase tracking-wide text-gray-300 mb-2">{{ last_run_summary.title }}</div>
+        {{ last_run_summary.body | safe }}
+    </div>
+        {% endif %}
     {% endif %}
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">

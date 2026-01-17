@@ -8,6 +8,7 @@ from werkzeug.security import generate_password_hash
 
 _config_lock = threading.Lock()
 _CONFIG_PATH = os.getenv("OCTOBOT_CONFIG_PATH", "/config/config.json")
+_LASTRUN_PATH = os.path.join(os.path.dirname(_CONFIG_PATH), "lastrun.json")
 logger = logging.getLogger('octobot.config_manager')
 
 def _coerce_bool(value, default=False):
@@ -156,6 +157,30 @@ def _persist_config():
     except Exception as exc:
         logger.warning("Failed to persist config to %s: %s", _CONFIG_PATH, exc)
 
+
+def persist_last_run(payload):
+    if not isinstance(payload, dict):
+        return
+    with _config_lock:
+        try:
+            os.makedirs(os.path.dirname(_LASTRUN_PATH), exist_ok=True)
+            with open(_LASTRUN_PATH, 'w', encoding='utf-8') as f:
+                json.dump(payload, f, indent=2, sort_keys=True)
+            logger.info("Persisted last run to %s", _LASTRUN_PATH)
+        except Exception as exc:
+            logger.warning("Failed to persist last run to %s: %s", _LASTRUN_PATH, exc)
+
+
+def load_last_run():
+    with _config_lock:
+        if not os.path.exists(_LASTRUN_PATH):
+            return None
+        try:
+            with open(_LASTRUN_PATH, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as exc:
+            logger.warning("Failed to load last run from %s: %s", _LASTRUN_PATH, exc)
+            return None
 
 
 def validate_config(config_dict):
