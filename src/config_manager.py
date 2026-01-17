@@ -276,7 +276,7 @@ def load_last_run():
             return None
 
 
-def validate_config(config_dict):
+def validate_config(config_dict, require_web_auth=True):
     """Validate config values before saving"""
     errors = []
 
@@ -292,8 +292,9 @@ def validate_config(config_dict):
         errors.append("Switch threshold is required")
     if not config_dict.get('tariffs'):
         errors.append("Tariffs are required")
-    if not config_dict.get('web_username'):
-        errors.append("Web username is required")
+    if require_web_auth:
+        if not config_dict.get('web_username'):
+            errors.append("Web username is required")
 
     mqtt_enabled = str(config_dict.get('mqtt_enabled', '')).lower() in ['true', '1', 'yes', 'on']
     if mqtt_enabled:
@@ -329,8 +330,9 @@ def validate_config(config_dict):
     if batch_notifications and not config_dict.get('notification_urls'):
         errors.append("Notification URLs are required when batch notifications are enabled")
 
-    if not os.path.exists(_CONFIG_PATH) or not config.WEB_PASSWORD:
-        if not config_dict.get('web_password'):
-            errors.append("Web password is required")
+    if require_web_auth:
+        if not os.path.exists(_CONFIG_PATH) or not config.WEB_PASSWORD:
+            if not config_dict.get('web_password'):
+                errors.append("Web password is required")
 
     return errors

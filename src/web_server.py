@@ -195,7 +195,10 @@ def _build_last_run_summary(last_run):
 def config_page():
     if request.method == 'POST':
         # Validate input
-        errors = config_manager.validate_config(request.form.to_dict())
+        errors = config_manager.validate_config(
+            request.form.to_dict(),
+            require_web_auth=not is_ingress_request(),
+        )
         if errors:
             first_error = errors[0]
             error_map = _build_error_map(errors)
