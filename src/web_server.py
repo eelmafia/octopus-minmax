@@ -220,14 +220,17 @@ def config_page():
 @app.route('/logs')
 @require_auth
 def logs():
+    level = request.args.get('level', default='ALL').upper()
     log_lines = tail_file('logs/octobot.log', None)  # None = read entire file
     log_entries = group_log_entries(log_lines)
-    return render_template('logs.html', log_entries=log_entries)
+    log_entries = _filter_log_entries(log_entries, level)
+    return render_template('logs.html', log_entries=log_entries, selected_level=level)
 
 @app.route('/logs/entries')
 @require_auth
 def logs_entries():
     lines = request.args.get('lines', default='200')
+    level = request.args.get('level', default='ALL').upper()
     try:
         line_count = int(lines)
         if line_count <= 0:
@@ -237,6 +240,7 @@ def logs_entries():
 
     log_lines = tail_file('logs/octobot.log', line_count)
     log_entries = group_log_entries(log_lines)
+    log_entries = _filter_log_entries(log_entries, level)
     return jsonify(log_entries)
 
 
@@ -283,6 +287,23 @@ def group_log_entries(log_lines):
         entries.append(''.join(current_entry))
 
     return entries
+
+
+def _filter_log_entries(log_entries, level):
+    if level in ("", "ALL"):
+        return log_entries
+    filtered = []
+    for entry in log_entries:
+        entry_level = _extract_log_level(entry)
+        if entry_level == level:
+            filtered.append(entry)
+    return filtered
+
+
+def _extract_log_level(entry):
+    import re
+    match = re.search(r' - (DEBUG|INFO|WARNING|ERROR|CRITICAL) - ', entry)
+    return match.group(1) if match else None
 
 
 def run_server():
