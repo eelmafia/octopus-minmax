@@ -15,6 +15,7 @@ startup: application
 init: false
 map:
   - addon_config:rw
+  - ssl:ro
 description: A bot to automatically compare and switch smart electricity tariffs on Octopus Energy
 arch:
   - armhf

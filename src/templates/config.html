@@ -18,8 +18,9 @@
 
     <p class="text-gray-500 text-sm mb-6">* Required fields</p>
     {% if updated %}
-        <div class="mb-6 bg-green-900 border border-green-700 text-green-100 rounded-lg p-4">
-            Configuration updated successfully!
+        <div id="config-success" class="mb-6 bg-green-900 border border-green-700 text-green-100 rounded-lg p-4 flex items-start justify-between gap-4 transition-opacity duration-500">
+            <span>Configuration updated successfully!</span>
+            <button type="button" id="config-success-close" class="text-green-200 hover:text-green-100">✕</button>
         </div>
     {% endif %}
 
@@ -266,6 +267,54 @@
                     {% endif %}
                 </div>
 
+                <div class="flex items-center">
+                    <input type="checkbox" id="mqtt_use_tls" name="mqtt_use_tls" {% if config.mqtt_use_tls %}checked{% endif %}
+                           class="w-5 h-5 bg-gray-900 border border-gray-600 rounded">
+                    <label class="ml-3 text-gray-300" for="mqtt_use_tls">
+                        Use TLS
+                        <span class="ml-2 text-gray-400 cursor-help" title="Enable TLS (use port 8883) and certificate options">ⓘ</span>
+                    </label>
+                </div>
+
+                <div class="flex items-center">
+                    <input type="checkbox" id="mqtt_tls_insecure" name="mqtt_tls_insecure" {% if config.mqtt_tls_insecure %}checked{% endif %}
+                           class="w-5 h-5 bg-gray-900 border border-gray-600 rounded">
+                    <label class="ml-3 text-gray-300" for="mqtt_tls_insecure">
+                        Allow insecure TLS
+                        <span class="ml-2 text-gray-400 cursor-help" title="Allow self-signed certificates (not recommended)">ⓘ</span>
+                    </label>
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 mb-2" for="mqtt_ca_cert">
+                        CA Certificate Path
+                        <span class="ml-2 text-gray-400 cursor-help" title="Path to CA certificate file (optional)">ⓘ</span>
+                    </label>
+                    <input type="text" id="mqtt_ca_cert" name="mqtt_ca_cert" value="{{ config.mqtt_ca_cert }}"
+                           placeholder="/ssl/ca.crt"
+                           class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 mb-2" for="mqtt_client_cert">
+                        Client Certificate Path
+                        <span class="ml-2 text-gray-400 cursor-help" title="Path to client certificate file (optional)">ⓘ</span>
+                    </label>
+                    <input type="text" id="mqtt_client_cert" name="mqtt_client_cert" value="{{ config.mqtt_client_cert }}"
+                           placeholder="/ssl/client.crt"
+                           class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 mb-2" for="mqtt_client_key">
+                        Client Key Path
+                        <span class="ml-2 text-gray-400 cursor-help" title="Path to client key file (optional)">ⓘ</span>
+                    </label>
+                    <input type="text" id="mqtt_client_key" name="mqtt_client_key" value="{{ config.mqtt_client_key }}"
+                           placeholder="/ssl/client.key"
+                           class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
+                </div>
+
                 <div class="flex items-center gap-3">
                     <button type="button" id="mqtt-test-button"
                             class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
@@ -343,6 +392,11 @@
     const mqttPasswordField = document.getElementById('mqtt_password');
     const mqttEnabled = document.getElementById('mqtt_enabled');
     const mqttTopicInput = document.getElementById('mqtt_topic');
+    const mqttUseTls = document.getElementById('mqtt_use_tls');
+    const mqttTlsInsecure = document.getElementById('mqtt_tls_insecure');
+    const mqttCaCert = document.getElementById('mqtt_ca_cert');
+    const mqttClientCert = document.getElementById('mqtt_client_cert');
+    const mqttClientKey = document.getElementById('mqtt_client_key');
     const notificationUrls = document.getElementById('notification_urls');
     const batchNotifications = document.getElementById('batch_notifications');
     const onlyResultsNotifications = document.getElementById('only_results_notifications');
@@ -368,6 +422,11 @@
             mqttUsernameInput,
             mqttPasswordField,
             mqttTopicInput,
+            mqttUseTls,
+            mqttTlsInsecure,
+            mqttCaCert,
+            mqttClientCert,
+            mqttClientKey,
             mqttPasswordToggle,
             mqttTestButton
         ];
@@ -413,7 +472,12 @@
                         mqtt_host: mqttHostInput.value,
                         mqtt_port: mqttPortInput.value,
                         mqtt_username: mqttUsernameInput ? mqttUsernameInput.value : '',
-                        mqtt_password: mqttPasswordField ? mqttPasswordField.value : ''
+                        mqtt_password: mqttPasswordField ? mqttPasswordField.value : '',
+                        mqtt_use_tls: mqttUseTls && mqttUseTls.checked,
+                        mqtt_tls_insecure: mqttTlsInsecure && mqttTlsInsecure.checked,
+                        mqtt_ca_cert: mqttCaCert ? mqttCaCert.value : '',
+                        mqtt_client_cert: mqttClientCert ? mqttClientCert.value : '',
+                        mqtt_client_key: mqttClientKey ? mqttClientKey.value : ''
                     })
                 });
                 const data = await response.json();
@@ -443,6 +507,21 @@
             container.focus();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 0);
+    }
+    const successBox = document.getElementById('config-success');
+    const successClose = document.getElementById('config-success-close');
+    if (successBox && successClose) {
+        successClose.addEventListener('click', function() {
+            successBox.remove();
+        });
+    }
+    if (successBox) {
+        setTimeout(() => {
+            successBox.classList.add('opacity-0');
+            setTimeout(() => {
+                successBox.remove();
+            }, 500);
+        }, 3000);
     }
 </script>
 {% endblock %}

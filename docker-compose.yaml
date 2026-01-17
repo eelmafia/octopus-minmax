@@ -10,5 +10,6 @@ services:
     volumes:
       - ./logs:/app/logs
       - ./config:/config
+      - ./ssl:/ssl # Optional if using MQTT over TLS
     environment:
       - TZ=Europe/London
