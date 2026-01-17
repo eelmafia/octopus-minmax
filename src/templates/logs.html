@@ -7,10 +7,29 @@
         <a href="." class="text-blue-400 hover:text-blue-300">← Back to Dashboard</a>
     </div>
 
-    <div class="flex items-center justify-end mb-3">
+    <div class="flex items-center justify-end mb-3 gap-4">
         <label class="flex items-center text-gray-300 text-sm">
-            <input id="auto-refresh-toggle" type="checkbox" class="w-4 h-4 bg-gray-900 border border-gray-600 rounded mr-2" checked>
-            Auto refresh
+            <span class="mr-2">Level</span>
+            <select id="log-level" class="bg-gray-900 border border-gray-600 rounded px-2 py-1 text-gray-200">
+                <option value="ALL" {% if selected_level == "ALL" %}selected{% endif %}>All</option>
+                <option value="DEBUG" {% if selected_level == "DEBUG" %}selected{% endif %}>Debug</option>
+                <option value="INFO" {% if selected_level == "INFO" %}selected{% endif %}>Info</option>
+                <option value="WARNING" {% if selected_level == "WARNING" %}selected{% endif %}>Warning</option>
+                <option value="ERROR" {% if selected_level == "ERROR" %}selected{% endif %}>Error</option>
+                <option value="CRITICAL" {% if selected_level == "CRITICAL" %}selected{% endif %}>Critical</option>
+            </select>
+        </label>
+        <label class="flex items-center text-gray-300 text-sm">
+            <span class="mr-2">Refresh</span>
+            <select id="refresh-interval" class="bg-gray-900 border border-gray-600 rounded px-2 py-1 text-gray-200">
+                <option value="off">Off</option>
+                <option value="1000">1s</option>
+                <option value="2000">2s</option>
+                <option value="5000" selected>5s</option>
+                <option value="10000">10s</option>
+                <option value="30000">30s</option>
+                <option value="60000">60s</option>
+            </select>
         </label>
     </div>
 
@@ -28,7 +47,8 @@
 <script>
     const logContainer = document.getElementById('log-container');
     const logEntries = document.getElementById('log-entries');
-    const autoRefreshToggle = document.getElementById('auto-refresh-toggle');
+    const logLevel = document.getElementById('log-level');
+    const refreshInterval = document.getElementById('refresh-interval');
     let lastRendered = '';
     let refreshTimer = null;
 
@@ -48,7 +68,7 @@
     async function refreshLogs() {
         const wasAtBottom = isNearBottom(logContainer);
         try {
-            const response = await fetch('/logs/entries?lines=200', { cache: 'no-store' });
+            const response = await fetch(`/logs/entries?lines=200&level=${encodeURIComponent(logLevel.value)}`, { cache: 'no-store' });
             if (!response.ok) {
                 return;
             }
@@ -72,7 +92,11 @@
         if (refreshTimer) {
             return;
         }
-        refreshTimer = setInterval(refreshLogs, 1000);
+        const delay = Number(refreshInterval.value);
+        if (!delay) {
+            return;
+        }
+        refreshTimer = setInterval(refreshLogs, delay);
     }
 
     function stopAutoRefresh() {
@@ -88,12 +112,13 @@
         startAutoRefresh();
     });
 
-    autoRefreshToggle.addEventListener('change', function() {
-        if (autoRefreshToggle.checked) {
-            startAutoRefresh();
-        } else {
-            stopAutoRefresh();
-        }
+    logLevel.addEventListener('change', function() {
+        refreshLogs();
+    });
+
+    refreshInterval.addEventListener('change', function() {
+        stopAutoRefresh();
+        startAutoRefresh();
     });
 </script>
 {% endblock %}
