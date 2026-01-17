@@ -53,8 +53,29 @@ TARIFFS=go,agile \
 BASE_URL=https://api.octopus.energy/v1 \
 NOTIFICATION_URLS=<YourNotificationURLs> \
 BATCH_NOTIFICATIONS=true \
+ONLY_RESULTS_NOTIFICATIONS=false \
 python3 src/main.py
 ```
+
+Full list of environment variables;
+
+| Environment Variable | Description | Example |
+|----------------------|-------------|---------|
+| `OCTOBOT_CONFIG_PATH` | Path to the JSON config file | `./config/config.json` |
+| `API_KEY` | Octopus Energy API key | `sk_live_xxxxx` |
+| `ACC_NUMBER` | Octopus account number (starts with `A-`) | `A-12345678` |
+| `BASE_URL` | Octopus API base URL | `https://api.octopus.energy/v1` |
+| `EXECUTION_TIME` | Scheduled run time (24h `HH:MM`) | `23:00` |
+| `SWITCH_THRESHOLD` | Minimum savings in pence required to switch | `200` |
+| `TARIFFS` | Comma-separated tariff IDs to compare | `go,agile,flexible` |
+| `ONE_OFF` | Run once and reset | `true` |
+| `DRY_RUN` | Compare only; do not switch | `true` |
+| `NOTIFICATION_URLS` | Comma-separated Apprise URLs | `discord://... , tgram://...` |
+| `BATCH_NOTIFICATIONS` | Send notifications as a batch | `true` |
+| `ONLY_RESULTS_NOTIFICATIONS` | Suppress all notifications except results | `false` |
+| `WEB_USERNAME` | Web UI username (non-ingress) | `admin` |
+| `WEB_PASSWORD` | Web UI password (non-ingress) | `yourpassword` |
+| `WEB_PORT` | Web UI port | `5050` |
 
 I recommend scheduling it to run it at 11 PM in order to leave yourself an hour as a safety margin in case Octopus takes a while to generate your new agreement.
 
