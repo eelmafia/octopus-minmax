@@ -31,7 +31,7 @@ class NotificationService:
 
         return self._apprise
 
-    def send_notification(self, message:str, title: str = "", is_error: bool = False, batchable: bool = True) -> bool:
+    def send_notification(self, message:str, title: str = "", is_error: bool = False, batchable: bool = True, is_results: bool = False) -> bool:
         """Sends a notification using Apprise.
 
         Args:
@@ -39,8 +39,11 @@ class NotificationService:
             title (str, optional): The title of the notification.
             is_error (bool, optional): Whether the message is a stack trace. Defaults to False.
             batchable (bool, optional): Whether the message can be batched.
+            is_results (bool, optional): Whether this is the final results notification.
         """
         self._sync_config()
+        if config.ONLY_RESULTS_NOTIFICATIONS and not is_results and not is_error:
+            return False
         apprise = self._get_apprise()
         if not apprise:
             logger.warning("No notification services configured. Check config.NOTIFICATION_URLS.")

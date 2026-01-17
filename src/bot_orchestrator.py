@@ -118,6 +118,7 @@ class BotOrchestrator:
 
     def _compare_and_switch(self) -> None:
         ns = self.notification_service
+        only_results = config.ONLY_RESULTS_NOTIFICATIONS
         welcome_message = f"{'DRY RUN: ' if config.DRY_RUN else ''}Starting comparison of today's costs..."
         ns.send_notification(welcome_message)
 
@@ -127,21 +128,32 @@ class BotOrchestrator:
         results = comparison_engine.compare_tariffs(account_info, self.tariffs)
 
         summary = self._format_comparison_summary(results)
-        ns.send_notification(message=summary)
+        if not only_results:
+            ns.send_notification(message=summary, is_results=True)
 
         switched = False
         switch_error = False
+        outcome_message = None
         if results.should_switch:
             switch_message = f"Initiating Switch to {results.cheapest_tariff.display_name}"
-            ns.send_notification(switch_message)
+            if not only_results:
+                ns.send_notification(switch_message)
             if config.DRY_RUN:
-                ns.send_notification("DRY RUN: Not going through with switch today.")
+                outcome_message = "DRY RUN: Not going through with switch today."
+                if not only_results:
+                    ns.send_notification(outcome_message)
             else:
                 try:
                     switched = self._execute_switch(results.cheapest_tariff, account_info)
+                    if switched:
+                        outcome_message = f"Switched to {results.cheapest_tariff.display_name}."
+                    else:
+                        outcome_message = f"Switch to {results.cheapest_tariff.display_name} failed."
                 except Exception as exc:
                     switch_error = True
-                    ns.send_notification(f"ERROR: Switch failed: {exc}")
+                    outcome_message = f"ERROR: Switch failed: {exc}"
+                    if not only_results:
+                        ns.send_notification(outcome_message)
         else:
             if results.cheapest_tariff == results.current_tariff_comparison.tariff:
                 message = (f"You are already on the cheapest tariff: "
@@ -151,7 +163,15 @@ class BotOrchestrator:
                 message = (f"Not switching today - savings of (£{results.potential_savings / 100:.2f}) "
                            f"on the cheapest tariff {results.cheapest_tariff.display_name} are below your "
                            f"threshold of £{config.SWITCH_THRESHOLD / 100:.2f}")
-            ns.send_notification(message)
+            outcome_message = message
+            if not only_results:
+                ns.send_notification(message)
+
+        if only_results:
+            combined = summary
+            if outcome_message:
+                combined = f"{combined}\n{outcome_message}"
+            ns.send_notification(message=combined, is_results=True)
 
         self._persist_last_run(results, switched, switch_error)
 
