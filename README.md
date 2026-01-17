@@ -9,23 +9,15 @@ I created this because I've been a long-time Agile customer who got tired of the
 
 I personally have this running automatically every day at 11 PM inside a Raspberry Pi Docker container, but you can run it wherever you want.  It sends notifications and updates to a variety of services via [Apprise](https://github.com/caronc/apprise), but that's not required for it to work.
 
-## Web Dashboard
-
-After starting the bot you can access the web dashboard on `localhost:5050`
-
-- Make changes to your config through the dashboard without needing to restart
-- Access and read logs
-- See graph of savings (coming soon)
-
 ## How to Use
 
 ### Requirements
-- An Octopus Energy Account
+- An Octopus Energy Account (Get your API key [here](https://octopus.energy/dashboard/new/accounts/personal-details/api-access))
   - In case you don't have one, we both get £50 for using my referral: https://share.octopus.energy/coral-lake-50
-  - Get your API key [here](https://octopus.energy/dashboard/new/accounts/personal-details/api-access)
 - A smart meter
 - Be on a supported Octopus Smart Tariff (see tariffs below)
-- An Octopus Home Mini for real-time usage (**Important**). Request one from Octopus Energy for free [here](https://octopus.energy/blog/octopus-home-mini/).
+- An Octopus Home Mini for real-time usage (**Important**).
+  - Request one from Octopus Energy for free [here](https://octopus.energy/blog/octopus-home-mini/).
 
 ### HomeAssistant Addon
 
@@ -43,52 +35,78 @@ https://github.com/eelmafia/octopus-minmax
 
 
 ### Running Manually
-1. Install the Python requirements.
-2. Configure the environment variables.
-3. Run `main.py`. I recommend scheduling it to run it at 11 PM in order to leave yourself an hour as a safety margin in case Octopus takes a while to generate your new agreement.
+1. Create a venv (`python -m venv /path/to/venv`)
+2. Activate the venv (`source /path/to/venv/bin/activate`)
+3. Install the Python requirements (`pip install -r requirements.txt`)
+4. Optional: Configure the environment variables
+5. Run `python src/main.py` from the octopus-minmax directory. If you didn't set environment variables, you can pass them to `main.py` as such;
+
+```
+OCTOBOT_CONFIG_PATH=./config/config.json \
+WEB_PORT=5050 \
+DRY_RUN=true \
+ONE_OFF=true \
+API_KEY=<YourAPIKey> \
+ACC_NUMBER=OctopusAccountNumber> \
+SWITCH_THRESHOLD=200 \
+TARIFFS=go,agile \
+BASE_URL=https://api.octopus.energy/v1 \
+NOTIFICATION_URLS=<YourNotificationURLs> \
+BATCH_NOTIFICATIONS=true \
+python3 src/main.py
+```
+
+I recommend scheduling it to run it at 11 PM in order to leave yourself an hour as a safety margin in case Octopus takes a while to generate your new agreement.
 
 ### Running using Docker
 Docker run command:
+
 ```
 docker run -d \
   --name MinMaxOctopusBot \
-  -p 5001:5001 \
+  -p 5050:5050 \
   -v ./logs:/app/logs \
-  -e ACC_NUMBER="<your_account_number>" \
-  -e API_KEY="<your_api_key>" \
-  -e EXECUTION_TIME="23:00" \
-  -e SWITCH_THRESHOLD=2 \
-  -e NOTIFICATION_URLS="<apprise_notification_urls>" \
-  -e ONE_OFF=false \
-  -e DRY_RUN=false \
-  -e TARIFFS=go,agile,flexible \
+  -v ./config:/config \
   -e TZ=Europe/London \
-  -e BATCH_NOTIFICATIONS=false \
-  -e WEB_USERNAME="<whatever_you_want>" \
-  -e WEB_PASSWORD="<whatever_you_want>" \
+  --restart unless-stopped \
   eelmafia/octopus-minmax-bot
 ```
-or use the docker-compose.yaml **Don't forget to add your environment variables**
+or use the ```docker-compose.yaml``` file.
 
-Note : Remove the --restart unless line if you set the ONE_OFF variable or it will continuously run.
+**Note:**
 
-#### Environment Variables
-| Variable                    | Description                                                                                                                                                                                                             |
-|-----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `ACC_NUMBER`                | Your Octopus Energy account number.                                                                                                                                                                                     |
-| `API_KEY`                   | API token for accessing your Octopus Energy account.                                                                                                                                                                    |
-| `TARIFFS`                   | A list of tariffs to compare against. Default is go,agile,flexible                                                                                                                                                      |
-| `EXECUTION_TIME`            | (Optional) The time (HH:MM) when the script should execute. Default is `23:00` (11 PM).                                                                                                                                 |
-| `SWITCH_THRESHOLD`          | A value (in pence) which the saving must be before the switch occurs. Default is `2` (2p). |
-| `NOTIFICATION_URLS`         | (Optional) A comma-separated list of [Apprise](https://github.com/caronc/apprise) notification URLs for sending logs and updates.  See [Apprise documentation](https://github.com/caronc/apprise/wiki) for URL formats. |
-| `ONE_OFF`                   | (Optional) A flag for you to simply trigger an immediate execution instead of starting scheduling.                                                                                                                      |
-| `DRY_RUN`                   | (Optional) A flag to compare but not switch tariffs.                                                                                                                                                                    |
-| `BATCH_NOTIFICATIONS`       | (Optional) A flag to send messages in one batch rather than individually.                                                                                                                                               |
-| `WEB_USERNAME`              | (Optional) Defaults to `admin`. Auth for the web dashboard.
-| `WEB_PASSWORD`              | (Optional) Defaults to `admin`. Auth for the web dashboard.
-| `WEB_PORT`                  | (Optional) Defaults to `5050`.
+Remove the --restart unless line if you set the ONE_OFF variable or it will continuously run.
 
-*Reminder: Change the password to something else other than default. It's not meant to be secure, it's just there to stop others on your network from accessing the dashboard and your API key. If they have access to your compose/config files you're already cooked.*
+#### Using the web app
+When the bot starts, a web app is launched which can be accessed via one of the following methods depending upon how you're running the bot;
+
+* For Home Assistant, the web app is served via ingress, just click the "Open web UI" button from the addon page
+* For docker users, the web app is available via the mapped port (`default: 5050`), i.e. `http://192.168.1.10:5050`
+* When running manually, the web app is available either via the default port (`5050`) or whatever port you specify in the `WEB_PORT` environment variable
+
+Note: On first run (*and always when accessing via Home Assistant*), the web app has no authentication.
+
+Open the web app and click on the `Configuration` button
+
+Populate the fields, paying attention to mandatory fields highlighted with an asterisk
+
+![](https://private-user-images.githubusercontent.com/1013909/536533865-0fb0fc1d-ba3f-4780-9359-b44f7e027f8c.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3Njg2MTc4ODQsIm5iZiI6MTc2ODYxNzU4NCwicGF0aCI6Ii8xMDEzOTA5LzUzNjUzMzg2NS0wZmIwZmMxZC1iYTNmLTQ3ODAtOTM1OS1iNDRmN2UwMjdmOGMucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI2MDExNyUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNjAxMTdUMDIzOTQ0WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9MTY0MGEzMTQzMTFjNWEzNDQ4OGQwZDFiNTI2ZTJmNWE5ODZmNWJjMTBjYmUwMDJiYjI2YTEwNDE3NzM2MjhmNSZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QifQ.5OPtdxEvueSvsZ4MN3c1sZUS1YMDBWnuD8wP2QrXfMY)
+
+![](https://private-user-images.githubusercontent.com/1013909/536536034-3460b088-f83b-42a9-af42-dd73f6811739.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3Njg2MTc4ODQsIm5iZiI6MTc2ODYxNzU4NCwicGF0aCI6Ii8xMDEzOTA5LzUzNjUzNjAzNC0zNDYwYjA4OC1mODNiLTQyYTktYWY0Mi1kZDczZjY4MTE3MzkucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI2MDExNyUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNjAxMTdUMDIzOTQ0WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9NGIzNWIyMmYzYTE1NGE0ZjRmZjlmNGU3NDhiMWE0ODRiNWVlNWQ0NTc5NzUzYzYyNjZmMDJlZDhiMzQ4MTIwYiZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QifQ.Co_lBv9VNgLae_qTyQjQFrD-efECeO-qUp5wfu52F_g)
+
+Click the "Update Configuration" button to save your settings.  If you selected a One-Off Run, it will start shortly after saving the configuration.
+
+On adding or updating the web username or password, you will (unless running in Home Assistant) be immediately prompted to login.
+
+![](https://private-user-images.githubusercontent.com/1013909/536534468-01fea28f-e4d9-402a-bcbb-3a1a5db5379d.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3Njg2MTc4ODQsIm5iZiI6MTc2ODYxNzU4NCwicGF0aCI6Ii8xMDEzOTA5LzUzNjUzNDQ2OC0wMWZlYTI4Zi1lNGQ5LTQwMmEtYmNiYi0zYTFhNWRiNTM3OWQucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI2MDExNyUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNjAxMTdUMDIzOTQ0WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9OTI0OGQ0Nzg2YmU2MGJiM2ZlYWZmZDBmZDUxYTA3ZTJlNTdiMDBjYzc4YmIzOGY4MTU1NmQwYjNlYWM2OTFmYiZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QifQ.JFjQ1s8fXHAya638ohkaeIdwMriH3XVg2sk08P9ERpc)
+
+The main dashboard will show you a summary of the next scheduled run.  If the bot has already run (and successfully saved the results) an additional summary box will be displayed showing the outcome of that run.
+
+![](https://private-user-images.githubusercontent.com/1013909/537067384-c0a27a55-2ffc-4f5d-8aca-96c7ab20e9ee.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3Njg2MTc4ODQsIm5iZiI6MTc2ODYxNzU4NCwicGF0aCI6Ii8xMDEzOTA5LzUzNzA2NzM4NC1jMGEyN2E1NS0yZmZjLTRmNWQtOGFjYS05NmM3YWIyMGU5ZWUucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI2MDExNyUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNjAxMTdUMDIzOTQ0WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9ZjcyOGVkY2Q1MDNlYzg0MDdhYzg5YmNjNjQ4NGU0ZGIzZjUzMjYyYTRhZjYwZGNkMTllNGZkY2QwYzMyOGI4OSZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QifQ.9krH_FqoARFkbvPmV_evdFnI4ODX7uIaHKQtMpgvskc)
+
+The logs page allows you to view the logs generated by the bot.  You can configure the auto refresh frequency and which level of logs you want to see.
+
+![](https://private-user-images.githubusercontent.com/1013909/537070174-71c5ffef-38fb-43e6-aba1-4336c3fd2018.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3Njg2MTc4ODQsIm5iZiI6MTc2ODYxNzU4NCwicGF0aCI6Ii8xMDEzOTA5LzUzNzA3MDE3NC03MWM1ZmZlZi0zOGZiLTQzZTYtYWJhMS00MzM2YzNmZDIwMTgucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI2MDExNyUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNjAxMTdUMDIzOTQ0WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9NzYxNTQ0NGQzODg0MjQxM2ExMjI4NmU1MDA4NWM3N2NhZTE3ODNhNWMyNmVmYTg2MDA0MGUwM2U4MmY5YzYwMSZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QifQ.VgQR8ysOyh8cyFkwwZukrvOwpD1Ki3KR8ZLLCNoUwNI)
 
 #### Supported Tariffs
 
@@ -106,7 +124,7 @@ Below is a list of supported tariffs, their IDs (to use in environment variables
 
 #### Setting up Apprise Notifications
 
-The `NOTIFICATION_URLS` environment variable allows you to configure notifications using the powerful [Apprise](https://github.com/caronc/apprise) library.  Apprise supports a wide variety of notification services, including Discord, Telegram, Slack, email, and many more.
+The `NOTIFICATION_URLS` environment variable and the `Notification URLs (Apprise)` field in the web app allows you to configure notifications using the powerful [Apprise](https://github.com/caronc/apprise) library.  Apprise supports a wide variety of notification services, including Discord, Telegram, Slack, email, and many more.
 
 To configure notifications:
 
@@ -117,12 +135,16 @@ To configure notifications:
     *   **Discord:** `discord://webhook_id/webhook_token`
     *   **Telegram:** `tgram://bottoken/ChatID`
 
-3.  **Set the `NOTIFICATION_URLS` environment variable:** Create a comma-separated string containing the Apprise URLs for all your desired services.  For example:
+3.  **Set the `NOTIFICATION_URLS` environment variable or the `Notification URLs (Apprise)` field in the web app:** Create a comma-separated string containing the Apprise URLs for all your desired services.  For example:
 
-    ```bash
+    ```
     NOTIFICATION_URLS="discord://webhook_id/webhook_token,tgram://bottoken/ChatID,mailto://user:pass@example.com?to=recipient@example.com"
     ```
+as an environment variable or;
 
-    Make sure to replace the example values with your actual credentials.
+	```
+	discord://webhook_id/webhook_token,tgram://bottoken/ChatID,mailto://user:pass@example.com?to=recipient@example.com
+	```
+in the web app.
 
-4.  **Restart the container (if using Docker) or run the script:**  The bot will now send notifications to all the configured services.
+	**Make sure to replace the example values with your actual credentials!**
