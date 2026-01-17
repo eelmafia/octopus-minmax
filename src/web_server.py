@@ -199,6 +199,7 @@ def config_page():
             first_error = errors[0]
             error_map = _build_error_map(errors)
             field_id, _anchor = _error_to_field_anchor(first_error)
+            logger.info("Config validation failed: %s field(s): %s", len(error_map), ", ".join(error_map.keys()))
             current_config = config_manager.get_config()
             missing_config = not os.path.exists(CONFIG_PATH)
             return render_template(
@@ -231,7 +232,7 @@ def config_page():
     config_manager.load_persisted_config()
     current_config = config_manager.get_config()
     missing_config = not os.path.exists(CONFIG_PATH)
-    error_field = request.args.get('error_field', '')
+    error_field = ''
     focus_top = session.pop('focus_top', False)
     updated = session.pop('updated', False)
     error_map = {}
@@ -251,17 +252,18 @@ def config_page():
 @app.route('/logs')
 @require_auth
 def logs():
-    level = request.args.get('level', default='ALL').upper()
+    level = str(session.get('log_level', 'ALL')).upper()
     log_lines = tail_file('logs/octobot.log', None)  # None = read entire file
     log_entries = group_log_entries(log_lines)
     log_entries = _filter_log_entries(log_entries, level)
     return render_template('logs.html', log_entries=log_entries, selected_level=level)
 
-@app.route('/logs/entries')
+@app.route('/logs/entries', methods=['POST'])
 @require_auth
 def logs_entries():
-    lines = request.args.get('lines', default='200')
-    level = request.args.get('level', default='ALL').upper()
+    payload = request.get_json(silent=True) or {}
+    lines = payload.get('lines', 200)
+    level = str(payload.get('level', session.get('log_level', 'ALL'))).upper()
     try:
         line_count = int(lines)
         if line_count <= 0:
@@ -269,6 +271,8 @@ def logs_entries():
     except ValueError:
         line_count = 200
 
+    session['log_level'] = level
+    session['log_lines'] = line_count
     log_lines = tail_file('logs/octobot.log', line_count)
     log_entries = group_log_entries(log_lines)
     log_entries = _filter_log_entries(log_entries, level)
@@ -286,10 +290,13 @@ def mqtt_test():
     try:
         port = int(port_raw)
     except (TypeError, ValueError):
+        logger.warning("MQTT test failed: invalid port %r", port_raw)
         return jsonify({'ok': False, 'message': 'Invalid port'}), 400
     if not host:
+        logger.warning("MQTT test failed: missing host")
         return jsonify({'ok': False, 'message': 'MQTT host is required'}), 400
     if mqtt is None:
+        logger.warning("MQTT test failed: paho-mqtt not installed")
         return jsonify({'ok': False, 'message': 'paho-mqtt is not installed'}), 500
     try:
         connect_event = threading.Event()
@@ -315,12 +322,16 @@ def mqtt_test():
         client.disconnect()
         client.loop_stop()
         if not connected:
+            logger.warning("MQTT test failed: connection timed out (%s:%s)", host, port)
             return jsonify({'ok': False, 'message': 'Connection timed out'}), 200
         if result['rc'] == 0:
+            logger.info("MQTT test succeeded: connected to %s:%s", host, port)
             return jsonify({'ok': True, 'message': f'Connected to {host}:{port}'}), 200
         error_text = mqtt.connack_string(result['rc'])
+        logger.warning("MQTT test failed: %s (%s:%s)", error_text, host, port)
         return jsonify({'ok': False, 'message': f'Connection failed: {error_text}'}), 200
     except Exception as exc:
+        logger.warning("MQTT test failed: %s (%s:%s)", exc, host, port)
         return jsonify({'ok': False, 'message': f'Connection failed: {exc}'}), 200
 
 

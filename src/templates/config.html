@@ -30,7 +30,10 @@
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-gray-300 mb-2" for="api_key">API Key *</label>
+                    <label class="block text-gray-300 mb-2" for="api_key">
+                        API Key *
+                        <span class="ml-2 text-gray-400 cursor-help" title="Your Octopus API key (starts with sk_live_...)">ⓘ</span>
+                    </label>
                     <input type="text" id="api_key" name="api_key" value="{{ config.api_key }}"
                            placeholder="<your_api_key>"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
@@ -40,7 +43,10 @@
                 </div>
 
                 <div>
-                    <label class="block text-gray-300 mb-2" for="acc_number">Account Number *</label>
+                    <label class="block text-gray-300 mb-2" for="acc_number">
+                        Account Number *
+                        <span class="ml-2 text-gray-400 cursor-help" title="Your Octopus account number (starts with A-)">ⓘ</span>
+                    </label>
                     <input type="text" id="acc_number" name="acc_number" value="{{ config.acc_number }}"
                            placeholder="<your_account_number>"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
@@ -50,7 +56,10 @@
                 </div>
 
                 <div>
-                    <label class="block text-gray-300 mb-2" for="base_url">Base URL *</label>
+                    <label class="block text-gray-300 mb-2" for="base_url">
+                        Base URL *
+                        <span class="ml-2 text-gray-400 cursor-help" title="API endpoint; leave as default unless instructed">ⓘ</span>
+                    </label>
                     <input type="text" id="base_url" name="base_url" value="{{ config.base_url }}"
                            placeholder="https://api.octopus.energy/v1"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
@@ -70,7 +79,10 @@
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-gray-300 mb-2" for="execution_time">Execution Time (HH:MM) *</label>
+                    <label class="block text-gray-300 mb-2" for="execution_time">
+                        Execution Time (HH:MM) *
+                        <span class="ml-2 text-gray-400 cursor-help" title="Daily run time in 24-hour format">ⓘ</span>
+                    </label>
                     <input type="time" id="execution_time" name="execution_time" value="{{ config.execution_time }}"
                            placeholder="23:00"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
@@ -80,7 +92,10 @@
                 </div>
 
                 <div>
-                    <label class="block text-gray-300 mb-2" for="switch_threshold">Switch Threshold (pence) *</label>
+                    <label class="block text-gray-300 mb-2" for="switch_threshold">
+                        Switch Threshold (pence) *
+                        <span class="ml-2 text-gray-400 cursor-help" title="Minimum savings in pence required to switch">ⓘ</span>
+                    </label>
                     <input type="number" id="switch_threshold" name="switch_threshold" value="{{ config.switch_threshold }}" step="1"
                            placeholder="2"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
@@ -92,12 +107,18 @@
                 <div class="flex items-center">
                     <input type="checkbox" id="dry_run" name="dry_run" {% if config.dry_run %}checked{% endif %}
                            class="w-5 h-5 bg-gray-900 border border-gray-600 rounded">
-                    <label class="ml-3 text-gray-300" for="dry_run">Dry Run (compare only, don't switch)</label>
+                    <label class="ml-3 text-gray-300" for="dry_run">
+                        Dry Run
+                        <span class="ml-2 text-gray-400 cursor-help" title="Compare only; no switch will occur">ⓘ</span>
+                    </label>
                 </div>
                 <div class="flex items-center">
                     <input type="checkbox" id="one_off_run" name="one_off_run" {% if config.one_off_run %}checked{% endif %}
                            class="w-5 h-5 bg-gray-900 border border-gray-600 rounded">
-                    <label class="ml-3 text-gray-300" for="one_off_run">One-Off Run (run once and wait)</label>
+                    <label class="ml-3 text-gray-300" for="one_off_run">
+                        One-Off Run
+                        <span class="ml-2 text-gray-400 cursor-help" title="Run once now; checkbox clears after run">ⓘ</span>
+                    </label>
                 </div>
             </div>
             <div class="mt-4 text-sm">
@@ -110,11 +131,14 @@
             <h3 class="text-xl font-bold text-gray-100 mb-4">Tariff Settings</h3>
 
                 <div>
-                    <label class="block text-gray-300 mb-2" for="tariffs">Tariffs (comma-separated) *</label>
+                    <label class="block text-gray-300 mb-2" for="tariffs">
+                        Tariff List *
+                        <span class="ml-2 text-gray-400 cursor-help" title="Comma-separated IDs (e.g. go,agile)">ⓘ</span>
+                    </label>
                     <input type="text" id="tariffs" name="tariffs" value="{{ '' if missing_config else config.tariffs }}"
                            placeholder="go,agile,flexible"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
-                    <p class="text-gray-500 text-sm mt-2">e.g. go, agile, cosy, flexible</p>
+                    <p class="text-gray-500 text-sm mt-2">e.g. go,agile,cosy,flexible</p>
                     {% if error_map.tariffs %}
                         <p class="text-sm text-red-300 mt-2">{{ error_map.tariffs }}</p>
                     {% endif %}
@@ -130,7 +154,10 @@
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-gray-300 mb-2" for="notification_urls">Notification URLs (<a href="https://github.com/caronc/apprise?tab=readme-ov-file#supported-notifications" class="text-blue-400 hover:text-blue-300" target="_blank" rel="noreferrer">Apprise</a>)</label>
+                    <label class="block text-gray-300 mb-2" for="notification_urls">
+                        Notification URLs (<a href="https://github.com/caronc/apprise?tab=readme-ov-file#supported-notifications" class="text-blue-400 hover:text-blue-300" target="_blank" rel="noreferrer">Apprise</a>)
+                        <span class="ml-2 text-gray-400 cursor-help" title="Comma-separated Apprise URLs for notifications">ⓘ</span>
+                    </label>
                     <textarea id="notification_urls" name="notification_urls" rows="3"
                               placeholder="<apprise_notification_urls>"
                               class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">{{ config.notification_urls }}</textarea>
@@ -143,12 +170,18 @@
                 <div class="flex items-center">
                     <input type="checkbox" id="batch_notifications" name="batch_notifications" {% if config.batch_notifications %}checked{% endif %}
                            class="w-5 h-5 bg-gray-900 border border-gray-600 rounded">
-                    <label class="ml-3 text-gray-300" for="batch_notifications">Batch Notifications</label>
+                    <label class="ml-3 text-gray-300" for="batch_notifications">
+                        Batch Notifications
+                        <span class="ml-2 text-gray-400 cursor-help" title="Send a single summary message per run">ⓘ</span>
+                    </label>
                 </div>
                 <div class="flex items-center">
                     <input type="checkbox" id="only_results_notifications" name="only_results_notifications" {% if config.only_results_notifications %}checked{% endif %}
                            class="w-5 h-5 bg-gray-900 border border-gray-600 rounded">
-                    <label class="ml-3 text-gray-300" for="only_results_notifications">Only send notification for results</label>
+                    <label class="ml-3 text-gray-300" for="only_results_notifications">
+                        Only send notification for results
+                        <span class="ml-2 text-gray-400 cursor-help" title="Suppress startup and progress messages">ⓘ</span>
+                    </label>
                 </div>
             </div>
             <div class="mt-4 text-sm">
@@ -164,11 +197,17 @@
                 <div class="flex items-center">
                     <input type="checkbox" id="mqtt_enabled" name="mqtt_enabled" {% if config.mqtt_enabled %}checked{% endif %}
                            class="w-5 h-5 bg-gray-900 border border-gray-600 rounded">
-                    <label class="ml-3 text-gray-300" for="mqtt_enabled">Enable MQTT</label>
+                    <label class="ml-3 text-gray-300" for="mqtt_enabled">
+                        Enable MQTT
+                        <span class="ml-2 text-gray-400 cursor-help" title="Publish results to MQTT server">ⓘ</span>
+                    </label>
                 </div>
 
                 <div>
-                    <label class="block text-gray-300 mb-2" for="mqtt_host">MQTT Host *</label>
+                    <label class="block text-gray-300 mb-2" for="mqtt_host">
+                        MQTT Host *
+                        <span class="ml-2 text-gray-400 cursor-help" title="Broker hostname or IP">ⓘ</span>
+                    </label>
                     <input type="text" id="mqtt_host" name="mqtt_host" value="{{ config.mqtt_host }}"
                            placeholder="broker.local"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
@@ -178,7 +217,10 @@
                 </div>
 
                 <div>
-                    <label class="block text-gray-300 mb-2" for="mqtt_port">MQTT Port *</label>
+                    <label class="block text-gray-300 mb-2" for="mqtt_port">
+                        MQTT Port *
+                        <span class="ml-2 text-gray-400 cursor-help" title="Broker port">ⓘ</span>
+                    </label>
                     <input type="number" id="mqtt_port" name="mqtt_port" value="{{ config.mqtt_port }}" step="1"
                            placeholder="1883"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
@@ -188,13 +230,19 @@
                 </div>
 
                 <div>
-                    <label class="block text-gray-300 mb-2" for="mqtt_username">MQTT Username</label>
+                    <label class="block text-gray-300 mb-2" for="mqtt_username">
+                        MQTT Username
+                        <span class="ml-2 text-gray-400 cursor-help" title="Optional broker username">ⓘ</span>
+                    </label>
                     <input type="text" id="mqtt_username" name="mqtt_username" value="{{ config.mqtt_username }}"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
                 </div>
 
                 <div>
-                    <label class="block text-gray-300 mb-2" for="mqtt_password">MQTT Password</label>
+                    <label class="block text-gray-300 mb-2" for="mqtt_password">
+                        MQTT Password
+                        <span class="ml-2 text-gray-400 cursor-help" title="Optional broker password; leave blank for none">ⓘ</span>
+                    </label>
                     <div class="flex items-center gap-3">
                         <input type="password" id="mqtt_password" name="mqtt_password" value="{{ config.mqtt_password }}"
                                class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
@@ -203,11 +251,13 @@
                             Show
                         </label>
                     </div>
-                    <p class="text-gray-500 text-sm mt-2">Leave blank to use no password</p>
                 </div>
 
                 <div>
-                    <label class="block text-gray-300 mb-2" for="mqtt_topic">MQTT Topic *</label>
+                    <label class="block text-gray-300 mb-2" for="mqtt_topic">
+                        MQTT Topic *
+                        <span class="ml-2 text-gray-400 cursor-help" title="Base topic for results">ⓘ</span>
+                    </label>
                     <input type="text" id="mqtt_topic" name="mqtt_topic" value="{{ config.mqtt_topic }}"
                            placeholder="octobot/results"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
@@ -235,7 +285,10 @@
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-gray-300 mb-2" for="web_username">Web Username *</label>
+                    <label class="block text-gray-300 mb-2" for="web_username">
+                        Web Username *
+                        <span class="ml-2 text-gray-400 cursor-help" title="Username for the web UI">ⓘ</span>
+                    </label>
                     <input type="text" id="web_username" name="web_username" value="{{ config.web_username or '' }}"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
                     {% if error_map.web_username %}
@@ -244,7 +297,10 @@
                 </div>
 
                 <div>
-                    <label class="block text-gray-300 mb-2" for="web_password">Web Password</label>
+                    <label class="block text-gray-300 mb-2" for="web_password">
+                        Web Password
+                        <span class="ml-2 text-gray-400 cursor-help" title="Set a new password; leave blank to keep current">ⓘ</span>
+                    </label>
                     <div class="flex items-center gap-3">
                         <input type="password" id="web_password" name="web_password" value=""
                                class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
@@ -257,7 +313,6 @@
                         <p class="text-sm text-red-300 mt-2">{{ error_map.web_password }}</p>
                     {% endif %}
                     <p class="text-gray-500 text-sm mt-2">Changing the username and/or password will require you to log in again</p>
-                    <p class="text-gray-500 text-sm mt-2">Leave blank to keep the current password</p>
                 </div>
             </div>
             <div class="mt-4 text-sm">
