@@ -36,8 +36,8 @@ class BotOrchestrator:
         while True:
             if config.ONE_OFF_RUN and not config.ONE_OFF_EXECUTED:
                 ns.send_notification(f"[{get_timestamp()}] Octobot {config.BOT_VERSION} - Running one-off comparison")
+                config_manager.reset_one_off_run()
                 self._run_tariff_compare()
-                config.ONE_OFF_EXECUTED = True
             elif not config.ONE_OFF_RUN:
                 now = datetime.now()
                 current_time = now.strftime("%H:%M")
