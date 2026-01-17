@@ -15,6 +15,14 @@ BATCH_NOTIFICATIONS = os.getenv("BATCH_NOTIFICATIONS", "false") in ["true", "Tru
 # When enabled, suppress all notifications except the final results summary.
 ONLY_RESULTS_NOTIFICATIONS = os.getenv("ONLY_RESULTS_NOTIFICATIONS", "false") in ["true", "True", "1"]
 
+# MQTT settings (optional)
+MQTT_ENABLED = os.getenv("MQTT_ENABLED", "false") in ["true", "True", "1"]
+MQTT_HOST = os.getenv("MQTT_HOST", "")
+MQTT_PORT = int(os.getenv("MQTT_PORT", 1883))
+MQTT_USERNAME = os.getenv("MQTT_USERNAME", "")
+MQTT_PASSWORD = os.getenv("MQTT_PASSWORD", "")
+MQTT_TOPIC = os.getenv("MQTT_TOPIC", "")
+
 EXECUTION_TIME = os.getenv("EXECUTION_TIME", "23:00")
 
 # A threshold (in pence) over which the difference between the tariffs must be before the switch happens.

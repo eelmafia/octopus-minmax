@@ -1,17 +1,31 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
+<div id="top" class="max-w-4xl mx-auto" data-error-field="{{ error_field }}" data-focus-top="{{ '1' if focus_top else '' }}" tabindex="-1">
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-3xl font-bold text-gray-100">Configuration</h2>
         <a href="." class="text-blue-400 hover:text-blue-300">← Back to Dashboard</a>
     </div>
 
+    <div class="flex flex-wrap gap-3 mb-4 text-sm text-gray-300">
+        <a href="#api-settings" class="text-blue-400 hover:text-blue-300">API Settings</a>
+        <a href="#execution-settings" class="text-blue-400 hover:text-blue-300">Execution Settings</a>
+        <a href="#tariff-settings" class="text-blue-400 hover:text-blue-300">Tariff Settings</a>
+        <a href="#notification-settings" class="text-blue-400 hover:text-blue-300">Notification Settings</a>
+        <a href="#mqtt-settings" class="text-blue-400 hover:text-blue-300">MQTT Settings</a>
+        <a href="#web-settings" class="text-blue-400 hover:text-blue-300">Web Server</a>
+    </div>
+
     <p class="text-gray-500 text-sm mb-6">* Required fields</p>
+    {% if updated %}
+        <div class="mb-6 bg-green-900 border border-green-700 text-green-100 rounded-lg p-4">
+            Configuration updated successfully!
+        </div>
+    {% endif %}
 
     <form method="POST" class="space-y-6">
         <!-- API Settings -->
-        <div class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+        <div id="api-settings" class="bg-gray-800 border border-gray-700 rounded-lg p-6">
             <h3 class="text-xl font-bold text-gray-100 mb-4">API Settings</h3>
 
             <div class="space-y-4">
@@ -20,6 +34,9 @@
                     <input type="text" id="api_key" name="api_key" value="{{ config.api_key }}"
                            placeholder="<your_api_key>"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
+                    {% if error_map.api_key %}
+                        <p class="text-sm text-red-300 mt-2">{{ error_map.api_key }}</p>
+                    {% endif %}
                 </div>
 
                 <div>
@@ -27,6 +44,9 @@
                     <input type="text" id="acc_number" name="acc_number" value="{{ config.acc_number }}"
                            placeholder="<your_account_number>"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
+                    {% if error_map.acc_number %}
+                        <p class="text-sm text-red-300 mt-2">{{ error_map.acc_number }}</p>
+                    {% endif %}
                 </div>
 
                 <div>
@@ -34,12 +54,18 @@
                     <input type="text" id="base_url" name="base_url" value="{{ config.base_url }}"
                            placeholder="https://api.octopus.energy/v1"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
+                    {% if error_map.base_url %}
+                        <p class="text-sm text-red-300 mt-2">{{ error_map.base_url }}</p>
+                    {% endif %}
                 </div>
+            </div>
+            <div class="mt-4 text-sm">
+                <a href="#top" class="text-blue-400 hover:text-blue-300">Back to top</a>
             </div>
         </div>
 
         <!-- Execution Settings -->
-        <div class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+        <div id="execution-settings" class="bg-gray-800 border border-gray-700 rounded-lg p-6">
             <h3 class="text-xl font-bold text-gray-100 mb-4">Execution Settings</h3>
 
             <div class="space-y-4">
@@ -48,6 +74,9 @@
                     <input type="time" id="execution_time" name="execution_time" value="{{ config.execution_time }}"
                            placeholder="23:00"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
+                    {% if error_map.execution_time %}
+                        <p class="text-sm text-red-300 mt-2">{{ error_map.execution_time }}</p>
+                    {% endif %}
                 </div>
 
                 <div>
@@ -55,6 +84,9 @@
                     <input type="number" id="switch_threshold" name="switch_threshold" value="{{ config.switch_threshold }}" step="1"
                            placeholder="2"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
+                    {% if error_map.switch_threshold %}
+                        <p class="text-sm text-red-300 mt-2">{{ error_map.switch_threshold }}</p>
+                    {% endif %}
                 </div>
 
                 <div class="flex items-center">
@@ -68,32 +100,44 @@
                     <label class="ml-3 text-gray-300" for="one_off_run">One-Off Run (run once and wait)</label>
                 </div>
             </div>
+            <div class="mt-4 text-sm">
+                <a href="#top" class="text-blue-400 hover:text-blue-300">Back to top</a>
+            </div>
         </div>
 
         <!-- Tariff Settings -->
-        <div class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+        <div id="tariff-settings" class="bg-gray-800 border border-gray-700 rounded-lg p-6">
             <h3 class="text-xl font-bold text-gray-100 mb-4">Tariff Settings</h3>
 
-            <div>
-                <label class="block text-gray-300 mb-2" for="tariffs">Tariffs (comma-separated) *</label>
-                <input type="text" id="tariffs" name="tariffs" value="{{ '' if missing_config else config.tariffs }}"
-                       placeholder="go,agile,flexible"
-                       class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
-                <p class="text-gray-500 text-sm mt-2">Valid: go, agile, cosy, flexible</p>
+                <div>
+                    <label class="block text-gray-300 mb-2" for="tariffs">Tariffs (comma-separated) *</label>
+                    <input type="text" id="tariffs" name="tariffs" value="{{ '' if missing_config else config.tariffs }}"
+                           placeholder="go,agile,flexible"
+                           class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
+                    <p class="text-gray-500 text-sm mt-2">e.g. go, agile, cosy, flexible</p>
+                    {% if error_map.tariffs %}
+                        <p class="text-sm text-red-300 mt-2">{{ error_map.tariffs }}</p>
+                    {% endif %}
+                </div>
+            <div class="mt-4 text-sm">
+                <a href="#top" class="text-blue-400 hover:text-blue-300">Back to top</a>
             </div>
         </div>
 
         <!-- Notification Settings -->
-        <div class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+        <div id="notification-settings" class="bg-gray-800 border border-gray-700 rounded-lg p-6">
             <h3 class="text-xl font-bold text-gray-100 mb-4">Notification Settings</h3>
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-gray-300 mb-2" for="notification_urls">Notification URLs (Apprise)</label>
+                    <label class="block text-gray-300 mb-2" for="notification_urls">Notification URLs (<a href="https://github.com/caronc/apprise?tab=readme-ov-file#supported-notifications" class="text-blue-400 hover:text-blue-300" target="_blank" rel="noreferrer">Apprise</a>)</label>
                     <textarea id="notification_urls" name="notification_urls" rows="3"
                               placeholder="<apprise_notification_urls>"
                               class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">{{ config.notification_urls }}</textarea>
                     <p class="text-gray-500 text-sm mt-2">Comma-separated Apprise URLs</p>
+                    {% if error_map.notification_urls %}
+                        <p class="text-sm text-red-300 mt-2">{{ error_map.notification_urls }}</p>
+                    {% endif %}
                 </div>
 
                 <div class="flex items-center">
@@ -107,10 +151,86 @@
                     <label class="ml-3 text-gray-300" for="only_results_notifications">Only send notification for results</label>
                 </div>
             </div>
+            <div class="mt-4 text-sm">
+                <a href="#top" class="text-blue-400 hover:text-blue-300">Back to top</a>
+            </div>
+        </div>
+
+        <!-- MQTT Settings -->
+        <div id="mqtt-settings" class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+            <h3 class="text-xl font-bold text-gray-100 mb-4">MQTT Settings</h3>
+
+            <div class="space-y-4">
+                <div class="flex items-center">
+                    <input type="checkbox" id="mqtt_enabled" name="mqtt_enabled" {% if config.mqtt_enabled %}checked{% endif %}
+                           class="w-5 h-5 bg-gray-900 border border-gray-600 rounded">
+                    <label class="ml-3 text-gray-300" for="mqtt_enabled">Enable MQTT</label>
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 mb-2" for="mqtt_host">MQTT Host *</label>
+                    <input type="text" id="mqtt_host" name="mqtt_host" value="{{ config.mqtt_host }}"
+                           placeholder="broker.local"
+                           class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
+                    {% if error_map.mqtt_host %}
+                        <p class="text-sm text-red-300 mt-2">{{ error_map.mqtt_host }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 mb-2" for="mqtt_port">MQTT Port *</label>
+                    <input type="number" id="mqtt_port" name="mqtt_port" value="{{ config.mqtt_port }}" step="1"
+                           placeholder="1883"
+                           class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
+                    {% if error_map.mqtt_port %}
+                        <p class="text-sm text-red-300 mt-2">{{ error_map.mqtt_port }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 mb-2" for="mqtt_username">MQTT Username</label>
+                    <input type="text" id="mqtt_username" name="mqtt_username" value="{{ config.mqtt_username }}"
+                           class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 mb-2" for="mqtt_password">MQTT Password</label>
+                    <div class="flex items-center gap-3">
+                        <input type="password" id="mqtt_password" name="mqtt_password" value="{{ config.mqtt_password }}"
+                               class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
+                        <label class="flex items-center text-gray-300 text-sm whitespace-nowrap">
+                            <input id="mqtt-password-toggle" type="checkbox" class="w-4 h-4 bg-gray-900 border border-gray-600 rounded mr-2">
+                            Show
+                        </label>
+                    </div>
+                    <p class="text-gray-500 text-sm mt-2">Leave blank to use no password</p>
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 mb-2" for="mqtt_topic">MQTT Topic *</label>
+                    <input type="text" id="mqtt_topic" name="mqtt_topic" value="{{ config.mqtt_topic }}"
+                           placeholder="octobot/results"
+                           class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
+                    {% if error_map.mqtt_topic %}
+                        <p class="text-sm text-red-300 mt-2">{{ error_map.mqtt_topic }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button type="button" id="mqtt-test-button"
+                            class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
+                        Test
+                    </button>
+                    <span id="mqtt-test-status" class="text-sm text-gray-300"></span>
+                </div>
+            </div>
+            <div class="mt-4 text-sm">
+                <a href="#top" class="text-blue-400 hover:text-blue-300">Back to top</a>
+            </div>
         </div>
 
         <!-- Web Server Settings -->
-        <div class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+        <div id="web-settings" class="bg-gray-800 border border-gray-700 rounded-lg p-6">
             <h3 class="text-xl font-bold text-gray-100 mb-4">Web Server</h3>
 
             <div class="space-y-4">
@@ -118,6 +238,9 @@
                     <label class="block text-gray-300 mb-2" for="web_username">Web Username *</label>
                     <input type="text" id="web_username" name="web_username" value="{{ config.web_username or '' }}"
                            class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
+                    {% if error_map.web_username %}
+                        <p class="text-sm text-red-300 mt-2">{{ error_map.web_username }}</p>
+                    {% endif %}
                 </div>
 
                 <div>
@@ -130,9 +253,15 @@
                             Show
                         </label>
                     </div>
+                    {% if error_map.web_password %}
+                        <p class="text-sm text-red-300 mt-2">{{ error_map.web_password }}</p>
+                    {% endif %}
                     <p class="text-gray-500 text-sm mt-2">Changing the username and/or password will require you to log in again</p>
                     <p class="text-gray-500 text-sm mt-2">Leave blank to keep the current password</p>
                 </div>
+            </div>
+            <div class="mt-4 text-sm">
+                <a href="#top" class="text-blue-400 hover:text-blue-300">Back to top</a>
             </div>
         </div>
 
@@ -149,11 +278,116 @@
 <script>
     const webPasswordInput = document.getElementById('web_password');
     const webPasswordToggle = document.getElementById('web-password-toggle');
+    const mqttPasswordInput = document.getElementById('mqtt_password');
+    const mqttPasswordToggle = document.getElementById('mqtt-password-toggle');
+    const mqttTestButton = document.getElementById('mqtt-test-button');
+    const mqttTestStatus = document.getElementById('mqtt-test-status');
+    const mqttHostInput = document.getElementById('mqtt_host');
+    const mqttPortInput = document.getElementById('mqtt_port');
+    const mqttUsernameInput = document.getElementById('mqtt_username');
+    const mqttPasswordField = document.getElementById('mqtt_password');
+    const mqttEnabled = document.getElementById('mqtt_enabled');
+    const mqttTopicInput = document.getElementById('mqtt_topic');
+    const notificationUrls = document.getElementById('notification_urls');
+    const batchNotifications = document.getElementById('batch_notifications');
+    const onlyResultsNotifications = document.getElementById('only_results_notifications');
 
     if (webPasswordInput && webPasswordToggle) {
         webPasswordToggle.addEventListener('change', function() {
             webPasswordInput.type = webPasswordToggle.checked ? 'text' : 'password';
         });
+    }
+    if (mqttPasswordInput && mqttPasswordToggle) {
+        mqttPasswordToggle.addEventListener('change', function() {
+            mqttPasswordInput.type = mqttPasswordToggle.checked ? 'text' : 'password';
+        });
+    }
+    function syncMqttOptions() {
+        if (!mqttEnabled) {
+            return;
+        }
+        const enabled = mqttEnabled.checked;
+        const fields = [
+            mqttHostInput,
+            mqttPortInput,
+            mqttUsernameInput,
+            mqttPasswordField,
+            mqttTopicInput,
+            mqttPasswordToggle,
+            mqttTestButton
+        ];
+        fields.forEach((field) => {
+            if (field) {
+                field.disabled = !enabled;
+            }
+        });
+        if (!enabled && mqttTestStatus) {
+            mqttTestStatus.textContent = '';
+        }
+    }
+    function syncNotificationOptions() {
+        if (!notificationUrls || !batchNotifications || !onlyResultsNotifications) {
+            return;
+        }
+        const hasUrls = Boolean(notificationUrls.value.trim());
+        if (!hasUrls) {
+            batchNotifications.checked = false;
+            onlyResultsNotifications.checked = false;
+        }
+        batchNotifications.disabled = !hasUrls;
+        onlyResultsNotifications.disabled = !hasUrls;
+    }
+
+    if (notificationUrls) {
+        notificationUrls.addEventListener('input', syncNotificationOptions);
+        syncNotificationOptions();
+    }
+    if (mqttEnabled) {
+        mqttEnabled.addEventListener('change', syncMqttOptions);
+        syncMqttOptions();
+    }
+    if (mqttTestButton && mqttTestStatus && mqttHostInput && mqttPortInput) {
+        mqttTestButton.addEventListener('click', async function() {
+            mqttTestStatus.textContent = 'Testing...';
+            mqttTestStatus.className = 'text-sm text-gray-300';
+            try {
+                const response = await fetch('/mqtt/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mqtt_host: mqttHostInput.value,
+                        mqtt_port: mqttPortInput.value,
+                        mqtt_username: mqttUsernameInput ? mqttUsernameInput.value : '',
+                        mqtt_password: mqttPasswordField ? mqttPasswordField.value : ''
+                    })
+                });
+                const data = await response.json();
+                mqttTestStatus.textContent = data.message || 'Unknown response';
+                mqttTestStatus.className = data.ok ? 'text-sm text-green-300' : 'text-sm text-red-300';
+            } catch (error) {
+                mqttTestStatus.textContent = 'Test failed to run';
+                mqttTestStatus.className = 'text-sm text-red-300';
+            }
+        });
+    }
+    const container = document.getElementById('top');
+    const errorField = container ? container.dataset.errorField : '';
+    const focusTarget = container ? container.dataset.focusTop : '';
+    if (errorField) {
+        const field = document.getElementById(errorField);
+        if (field) {
+            field.focus();
+            field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+    if (!errorField && focusTarget === '1' && container) {
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, document.title, window.location.pathname);
+        }
+        setTimeout(() => {
+            container.focus();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 0);
     }
 </script>
 {% endblock %}

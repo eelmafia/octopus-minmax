@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, flash, Response, jsonify
+from flask import Flask, render_template, request, redirect, flash, Response, jsonify, session
 from functools import wraps
 import config_manager
 import config
@@ -6,6 +6,11 @@ import logging
 import os
 from datetime import datetime
 from werkzeug.security import check_password_hash
+import threading
+try:
+    import paho.mqtt.client as mqtt
+except Exception:  # pragma: no cover - optional dependency at runtime
+    mqtt = None
 
 logger = logging.getLogger('octobot.web_server')
 
@@ -191,8 +196,19 @@ def config_page():
         # Validate input
         errors = config_manager.validate_config(request.form.to_dict())
         if errors:
-            for error in errors:
-                flash(error, 'error')
+            first_error = errors[0]
+            error_map = _build_error_map(errors)
+            field_id, _anchor = _error_to_field_anchor(first_error)
+            current_config = config_manager.get_config()
+            missing_config = not os.path.exists(CONFIG_PATH)
+            return render_template(
+                'config.html',
+                config=current_config,
+                missing_config=missing_config,
+                error_field=field_id,
+                error_map=error_map,
+                show_flash=False
+            )
         else:
             # Update config
             try:
@@ -204,7 +220,8 @@ def config_page():
                 new_config = config_manager.get_config()
                 logger.info(f"Config updated successfully. New state: {new_config}")
 
-                flash('Configuration updated successfully!', 'success')
+                session['focus_top'] = True
+                session['updated'] = True
             except Exception as e:
                 flash(f'Error updating config: {str(e)}', 'error')
                 logger.error(f"Config update failed: {e}")
@@ -214,7 +231,21 @@ def config_page():
     config_manager.load_persisted_config()
     current_config = config_manager.get_config()
     missing_config = not os.path.exists(CONFIG_PATH)
-    return render_template('config.html', config=current_config, missing_config=missing_config)
+    error_field = request.args.get('error_field', '')
+    focus_top = session.pop('focus_top', False)
+    updated = session.pop('updated', False)
+    error_map = {}
+    show_flash = not bool(error_field)
+    return render_template(
+        'config.html',
+        config=current_config,
+        missing_config=missing_config,
+        error_field=error_field,
+        focus_top=focus_top,
+        error_map=error_map,
+        updated=updated,
+        show_flash=show_flash
+    )
 
 
 @app.route('/logs')
@@ -242,6 +273,55 @@ def logs_entries():
     log_entries = group_log_entries(log_lines)
     log_entries = _filter_log_entries(log_entries, level)
     return jsonify(log_entries)
+
+
+@app.route('/mqtt/test', methods=['POST'])
+@require_auth
+def mqtt_test():
+    payload = request.get_json(silent=True) or request.form.to_dict()
+    host = (payload or {}).get('mqtt_host') or config.MQTT_HOST
+    port_raw = (payload or {}).get('mqtt_port') or config.MQTT_PORT
+    username = (payload or {}).get('mqtt_username') or config.MQTT_USERNAME
+    password = (payload or {}).get('mqtt_password') or config.MQTT_PASSWORD
+    try:
+        port = int(port_raw)
+    except (TypeError, ValueError):
+        return jsonify({'ok': False, 'message': 'Invalid port'}), 400
+    if not host:
+        return jsonify({'ok': False, 'message': 'MQTT host is required'}), 400
+    if mqtt is None:
+        return jsonify({'ok': False, 'message': 'paho-mqtt is not installed'}), 500
+    try:
+        connect_event = threading.Event()
+        result = {'rc': None}
+
+        def _on_connect(client, userdata, flags, rc, properties=None):
+            result['rc'] = rc
+            connect_event.set()
+
+        def _on_disconnect(client, userdata, rc, properties=None):
+            if result['rc'] is None:
+                result['rc'] = rc
+            connect_event.set()
+
+        client = mqtt.Client()
+        if username or password:
+            client.username_pw_set(username or None, password or None)
+        client.on_connect = _on_connect
+        client.on_disconnect = _on_disconnect
+        client.connect(host, port, keepalive=10)
+        client.loop_start()
+        connected = connect_event.wait(timeout=5)
+        client.disconnect()
+        client.loop_stop()
+        if not connected:
+            return jsonify({'ok': False, 'message': 'Connection timed out'}), 200
+        if result['rc'] == 0:
+            return jsonify({'ok': True, 'message': f'Connected to {host}:{port}'}), 200
+        error_text = mqtt.connack_string(result['rc'])
+        return jsonify({'ok': False, 'message': f'Connection failed: {error_text}'}), 200
+    except Exception as exc:
+        return jsonify({'ok': False, 'message': f'Connection failed: {exc}'}), 200
 
 
 def tail_file(filepath, n):
@@ -309,3 +389,35 @@ def _extract_log_level(entry):
 def run_server():
     logger.info(f"Web server starting on http://localhost:{config.WEB_PORT}")
     app.run(host='0.0.0.0', port=config.WEB_PORT, debug=False, use_reloader=False)
+
+
+def _error_to_field_anchor(message):
+    mapping = {
+        "API key is required": ("api_key", "api-settings"),
+        "Account number is required": ("acc_number", "api-settings"),
+        "Base URL is required": ("base_url", "api-settings"),
+        "Execution time is required": ("execution_time", "execution-settings"),
+        "Execution time must be in HH:MM format (00:00 to 23:59)": ("execution_time", "execution-settings"),
+        "Switch threshold is required": ("switch_threshold", "execution-settings"),
+        "Switch threshold must be positive": ("switch_threshold", "execution-settings"),
+        "Switch threshold must be a number": ("switch_threshold", "execution-settings"),
+        "Tariffs are required": ("tariffs", "tariff-settings"),
+        "Notification URLs are required when batch notifications are enabled": ("notification_urls", "notification-settings"),
+        "Web username is required": ("web_username", "web-settings"),
+        "Web password is required": ("web_password", "web-settings"),
+        "MQTT host is required when MQTT is enabled": ("mqtt_host", "mqtt-settings"),
+        "MQTT port is required when MQTT is enabled": ("mqtt_port", "mqtt-settings"),
+        "MQTT port must be a positive number": ("mqtt_port", "mqtt-settings"),
+        "MQTT port must be a number": ("mqtt_port", "mqtt-settings"),
+        "MQTT topic is required when MQTT is enabled": ("mqtt_topic", "mqtt-settings"),
+    }
+    return mapping.get(message, ("", ""))
+
+
+def _build_error_map(errors):
+    error_map = {}
+    for error in errors:
+        field_id, _anchor = _error_to_field_anchor(error)
+        if field_id and field_id not in error_map:
+            error_map[field_id] = error
+    return error_map

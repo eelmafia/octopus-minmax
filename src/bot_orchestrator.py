@@ -4,6 +4,7 @@ from typing import List, Dict, Optional, Tuple
 import random
 import config
 import config_manager
+import mqtt_publisher
 from account_info import AccountInfo
 from account_manager import AccountManager
 from queries import *
@@ -241,6 +242,7 @@ class BotOrchestrator:
             'comparisons': [_comparison_payload(c) for c in results.alternative_comparisons],
         }
         config_manager.persist_last_run(payload)
+        mqtt_publisher.publish_results(payload)
 
     def _execute_switch(self, target_tariff: Tariff, account_info: AccountInfo) -> bool:
         ns = self.notification_service
