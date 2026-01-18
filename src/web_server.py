@@ -3,7 +3,9 @@ from functools import wraps
 import config_manager
 import config
 import logging
+import logger as app_logger_module
 import os
+import sys
 from datetime import datetime
 from werkzeug.security import check_password_hash
 import ssl
@@ -23,6 +25,28 @@ def _is_password_hash(value):
     if not value:
         return False
     return value.startswith(("pbkdf2:", "scrypt:", "argon2:", "sha256:"))
+
+def _is_ha_addon_runtime():
+    return bool(os.getenv("SUPERVISOR_TOKEN") or os.getenv("HASSIO_TOKEN") or os.path.exists("/data/options.json"))
+
+def _is_docker_runtime():
+    if os.path.exists("/.dockerenv"):
+        return True
+    try:
+        with open("/proc/1/cgroup", "r", encoding="utf-8") as f:
+            data = f.read()
+        return "docker" in data or "containerd" in data
+    except OSError:
+        return False
+
+def _has_cli_env_args():
+    for arg in sys.argv[1:]:
+        if "=" not in arg:
+            continue
+        key, _value = arg.split("=", 1)
+        if key and key != "OCTOBOT_CONFIG_PATH":
+            return True
+    return False
 
 def is_ingress_request():
     # Skip auth for ingress requests
@@ -70,11 +94,14 @@ def index():
     if migration_notice:
         flash(migration_notice, 'success')
     missing_config = not os.path.exists(CONFIG_PATH)
+    env_config_present = config_manager.has_env_config()
+    command_line_mode = not _is_ha_addon_runtime() and not _is_docker_runtime()
+    show_cli_env_notice = missing_config and command_line_mode and (env_config_present or _has_cli_env_args())
     current_config = config_manager.get_config()
     tariffs_display = _format_tariffs(current_config.get('tariffs', ''))
     run_prefix = _next_run_prefix(current_config.get('execution_time', ''))
     last_run_summary = _build_last_run_summary(config_manager.load_last_run())
-    return render_template('index.html', missing_config=missing_config, config=current_config, tariffs_display=tariffs_display, run_prefix=run_prefix, last_run_summary=last_run_summary)
+    return render_template('index.html', missing_config=missing_config, env_config_present=env_config_present, show_cli_env_notice=show_cli_env_notice, config=current_config, tariffs_display=tariffs_display, run_prefix=run_prefix, last_run_summary=last_run_summary)
 
 def _format_tariffs(value):
     items = [item.strip() for item in (value or '').split(',') if item.strip()]
@@ -221,12 +248,12 @@ def config_page():
             # Update config
             try:
                 submitted_values = request.form.to_dict()
-                logger.info(f"Config update submitted: {submitted_values}")
+                logger.debug(f"Config update submitted: {submitted_values}")
 
                 config_manager.update_config(request.form.to_dict())
 
                 new_config = config_manager.get_config()
-                logger.info(f"Config updated successfully. New state: {new_config}")
+                logger.debug(f"Config updated successfully. New state: {new_config}")
 
                 session['focus_top'] = True
                 session['updated'] = True
@@ -352,7 +379,7 @@ def mqtt_test():
             logger.warning("MQTT test failed: connection timed out (%s:%s)", host, port)
             return jsonify({'ok': False, 'message': 'Connection timed out'}), 200
         if result['rc'] == 0:
-            logger.info("MQTT test succeeded: connected to %s:%s", host, port)
+            logger.debug("MQTT test succeeded: connected to %s:%s", host, port)
             return jsonify({'ok': True, 'message': f'Connected to {host}:{port}'}), 200
         error_text = mqtt.connack_string(result['rc'])
         logger.warning("MQTT test failed: %s (%s:%s)", error_text, host, port)

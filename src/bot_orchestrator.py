@@ -1,4 +1,6 @@
 import time
+import os
+import socket
 from datetime import date, datetime, timezone
 from typing import List, Dict, Optional, Tuple
 import random
@@ -18,6 +20,34 @@ logger = logging.getLogger('octobot.bot_orchestrator')
 def get_timestamp():
     return datetime.now().strftime("%d/%m/%Y %H:%M")
 
+def _detect_dashboard_host():
+    host = os.getenv("OCTOBOT_DASHBOARD_HOST") or os.getenv("OCTOBOT_HOST")
+    if host:
+        return host
+    sock = None
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.connect(("8.8.8.8", 80))
+        ip = sock.getsockname()[0]
+        if ip and not ip.startswith("127."):
+            return ip
+    except OSError:
+        pass
+    finally:
+        if sock:
+            sock.close()
+    try:
+        ip = socket.gethostbyname(socket.gethostname())
+        if ip and not ip.startswith("127."):
+            return ip
+    except OSError:
+        pass
+    return None
+
+def _dashboard_url():
+    host = _detect_dashboard_host() or "0.0.0.0"
+    return f"http://{host}:{config.WEB_PORT}"
+
 class BotOrchestrator:
     def __init__(self):
         logger.debug(f"Initialising {__class__.__name__}")
@@ -32,7 +62,7 @@ class BotOrchestrator:
         ns = self.notification_service
 
         mode_msg = "ONE_OFF mode enabled" if config.ONE_OFF_RUN else f"Scheduled mode, running at {config.EXECUTION_TIME}"
-        ns.send_notification(f"[{get_timestamp()}] Octobot {config.BOT_VERSION} - {mode_msg} \n Check port {config.WEB_PORT} for dashboard.")
+        ns.send_notification(f"[{get_timestamp()}] Octobot {config.BOT_VERSION} - {mode_msg} \n Dashboard: {_dashboard_url()}")
 
         while True:
             if config.ONE_OFF_RUN and not config.ONE_OFF_EXECUTED:

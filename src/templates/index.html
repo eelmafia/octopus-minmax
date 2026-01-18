@@ -22,8 +22,20 @@
 
     {% if missing_config %}
     <div class="w-full max-w-4xl mb-8 bg-yellow-900 border border-yellow-700 text-yellow-100 rounded-lg p-4 text-center">
-        No config file found, edit the configuration and click Update Configuration to generate the file.
+        {% if not env_config_present %}
+            No config file found (and no environment variables present), edit the configuration and click Update Configuration to generate the file.
+        {% else %}
+            No config file found, edit the configuration and click Update Configuration to generate the file.
+        {% endif %}
     </div>
+        {% if show_cli_env_notice %}
+    <div class="w-full max-w-4xl mb-8 bg-blue-900 border border-blue-700 text-blue-100 rounded-lg p-4 text-center" data-flash>
+        <div class="flex items-start justify-between gap-4">
+            <div>Using environment variables. Config file is not used until the app is launched without environment variables.</div>
+            <button type="button" class="text-lg leading-none text-blue-200 hover:text-white" aria-label="Close notification" onclick="this.closest('[data-flash]').remove()">✕</button>
+        </div>
+    </div>
+        {% endif %}
     {% else %}
     <div class="w-full max-w-4xl mb-8 bg-green-900 border border-green-700 text-green-100 rounded-lg p-4 text-center">
         <div class="text-sm font-semibold uppercase tracking-wide text-green-200 mb-2">Summary</div>

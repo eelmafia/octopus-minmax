@@ -12,6 +12,33 @@ _LASTRUN_PATH = os.path.join(os.path.dirname(_CONFIG_PATH), "lastrun.json")
 logger = logging.getLogger('octobot.config_manager')
 _MIGRATION_NOTICE = None
 _OPTIONS_PATH = "/data/options.json"
+_ENV_MIGRATION_KEYS = (
+    "API_KEY",
+    "ACC_NUMBER",
+    "BASE_URL",
+    "EXECUTION_TIME",
+    "SWITCH_THRESHOLD",
+    "TARIFFS",
+    "ONE_OFF",
+    "DRY_RUN",
+    "NOTIFICATION_URLS",
+    "BATCH_NOTIFICATIONS",
+    "ONLY_RESULTS_NOTIFICATIONS",
+    "MQTT_ENABLED",
+    "MQTT_HOST",
+    "MQTT_PORT",
+    "MQTT_USERNAME",
+    "MQTT_PASSWORD",
+    "MQTT_TOPIC",
+    "MQTT_USE_TLS",
+    "MQTT_TLS_INSECURE",
+    "MQTT_CA_CERT",
+    "MQTT_CLIENT_CERT",
+    "MQTT_CLIENT_KEY",
+    "WEB_USERNAME",
+    "WEB_PASSWORD",
+    "NO_WEB_SERVER",
+)
 
 def _set_migration_notice(message):
     global _MIGRATION_NOTICE
@@ -106,7 +133,7 @@ def load_persisted_config():
                 with open(path, 'r', encoding='utf-8') as f:
                     values = json.load(f)
                 _apply_persisted_values(values)
-                logger.info("Loaded persisted config from %s", path)
+                logger.info("Loaded saved config from %s", path)
                 return
             except Exception as exc:
                 logger.warning("Failed to load persisted config from %s: %s", path, exc)
@@ -114,6 +141,12 @@ def load_persisted_config():
 def warn_if_missing_config():
     if not os.path.exists(_CONFIG_PATH):
         logger.warning("Config file missing at %s. Update configuration to create it.", _CONFIG_PATH)
+        config_path_env = os.getenv("OCTOBOT_CONFIG_PATH")
+        if config_path_env is not None and not has_env_config():
+            if not config_path_env or not os.path.exists(config_path_env):
+                logger.info(
+                    "No config found - app is not configured - edit the configuration in the web UI or pass the correct environment variables"
+                )
 
 def migrate_options_if_needed():
     """Migrate Home Assistant options.json into config.json when missing."""
@@ -128,13 +161,30 @@ def migrate_options_if_needed():
             logger.warning("Options file %s was not a JSON object.", _OPTIONS_PATH)
             return False
         _apply_persisted_values(values)
-        _persist_config()
+        _persist_config(source="Home Assistant options.json")
         _set_migration_notice("Migrated settings from add-on options to config.json.")
         logger.info("Migrated config from %s to %s", _OPTIONS_PATH, _CONFIG_PATH)
         return True
     except Exception as exc:
         logger.warning("Failed to migrate options from %s: %s", _OPTIONS_PATH, exc)
         return False
+
+def migrate_env_if_needed():
+    """Persist environment-driven config into config.json when missing."""
+    if os.path.exists(_CONFIG_PATH):
+        return False
+    if not any(os.getenv(key) not in (None, "") for key in _ENV_MIGRATION_KEYS):
+        return False
+    try:
+        _persist_config(source="environment variables")
+        _set_migration_notice("Persisted settings from environment variables to config.json.")
+        return True
+    except Exception as exc:
+        logger.warning("Failed to persist config from environment variables: %s", exc)
+        return False
+
+def has_env_config():
+    return any(os.getenv(key) not in (None, "") for key in _ENV_MIGRATION_KEYS)
 
 def get_config():
     """Get current configuration as dictionary (thread-safe)"""
@@ -241,9 +291,9 @@ def update_config(new_values):
         if config.ONE_OFF_RUN and not previous_one_off:
             config.ONE_OFF_EXECUTED = False
 
-        _persist_config()
+        _persist_config(source="webui")
 
-def _persist_config():
+def _persist_config(source=None):
     payload = {
         'API_KEY': config.API_KEY,
         'ACC_NUMBER': config.ACC_NUMBER,
@@ -275,7 +325,10 @@ def _persist_config():
         os.makedirs(os.path.dirname(_CONFIG_PATH), exist_ok=True)
         with open(_CONFIG_PATH, 'w', encoding='utf-8') as f:
             json.dump(payload, f, indent=2, sort_keys=True)
-        logger.info("Persisted config to %s", _CONFIG_PATH)
+        if source:
+            logger.info("Saved config to %s (source: %s)", _CONFIG_PATH, source)
+        else:
+            logger.info("Saved config to %s", _CONFIG_PATH)
     except Exception as exc:
         logger.warning("Failed to persist config to %s: %s", _CONFIG_PATH, exc)
 
@@ -295,7 +348,7 @@ def persist_last_run(payload):
             os.makedirs(os.path.dirname(_LASTRUN_PATH), exist_ok=True)
             with open(_LASTRUN_PATH, 'w', encoding='utf-8') as f:
                 json.dump(payload, f, indent=2, sort_keys=True)
-            logger.info("Persisted last run to %s", _LASTRUN_PATH)
+            logger.debug("Saved last run to %s", _LASTRUN_PATH)
         except Exception as exc:
             logger.warning("Failed to persist last run to %s: %s", _LASTRUN_PATH, exc)
 
