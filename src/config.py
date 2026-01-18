@@ -47,3 +47,4 @@ DRY_RUN = os.getenv("DRY_RUN", "false") in ["true", "True", "1"]
 WEB_USERNAME = os.getenv("WEB_USERNAME", "")
 WEB_PASSWORD = os.getenv("WEB_PASSWORD", "")
 WEB_PORT = int(os.getenv("WEB_PORT", 5050))
+NO_WEB_SERVER = os.getenv("NO_WEB_SERVER", "false") in ["true", "True", "1"]
