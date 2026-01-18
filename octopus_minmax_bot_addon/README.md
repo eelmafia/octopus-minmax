@@ -33,13 +33,12 @@ To install this third-party add-on:
 https://github.com/eelmafia/octopus-minmax
 4. Refresh the page if needed. The add-on will appear under **Octopus MinMax Bot**.
 
-
 ### Running Manually
 1. Create a venv (`python -m venv /path/to/venv`)
 2. Activate the venv (`source /path/to/venv/bin/activate`)
 3. Install the Python requirements (`pip install -r requirements.txt`)
 4. Optional: Configure the environment variables
-5. Run `python src/main.py` from the octopus-minmax directory. If you didn't set environment variables, you can pass them to `main.py` as such;
+5. Run `python src/main.py` from the octopus-minmax directory. If you didn't set environment variables, you can pass them to `main.py` as per the minimal example below;
 
 ```
 OCTOBOT_CONFIG_PATH=./config/config.json \
@@ -56,6 +55,8 @@ BATCH_NOTIFICATIONS=true \
 ONLY_RESULTS_NOTIFICATIONS=false \
 python3 src/main.py
 ```
+
+Note: to disable the built in web server, pass NO_WEB_SERVER=true as an environment variable.
 
 Full list of environment variables;
 
@@ -76,11 +77,12 @@ Full list of environment variables;
 | `WEB_USERNAME` | Web UI username (non-ingress) | `admin` |
 | `WEB_PASSWORD` | Web UI password (non-ingress) | `yourpassword` |
 | `WEB_PORT` | Web UI port | `5050` |
+| `NO_WEB_SERVER` | Disable the web server entirely | `true` |
 
 I recommend scheduling it to run it at 11 PM in order to leave yourself an hour as a safety margin in case Octopus takes a while to generate your new agreement.
 
 ### Running using Docker
-Docker run command:
+Minimal Docker run command:
 
 ```
 docker run -d \
@@ -88,6 +90,18 @@ docker run -d \
   -p 5050:5050 \
   -v ./logs:/app/logs \
   -v ./config:/config \
+  -e OCTOBOT_CONFIG_PATH=./config/config.json \
+  -e WEB_PORT=5050 \
+  -e DRY_RUN=true \
+  -e ONE_OFF=true \
+  -e API_KEY=<YourAPIKey> \
+  -e ACC_NUMBER=<OctopusAccountNumber> \
+  -e SWITCH_THRESHOLD=200 \
+  -e TARIFFS=go,agile \
+  -e BASE_URL=https://api.octopus.energy/v1 \
+  -e NOTIFICATION_URLS=<YourNotificationURLs> \
+  -e BATCH_NOTIFICATIONS=true \
+  -e ONLY_RESULTS_NOTIFICATIONS=false \
   -e TZ=Europe/London \
   --restart unless-stopped \
   eelmafia/octopus-minmax-bot
@@ -95,6 +109,8 @@ docker run -d \
 or use the ```docker-compose.yaml``` file.
 
 **Note:**
+
+To disable the built in web server, pass NO_WEB_SERVER=true in the docker run command.
 
 Remove the --restart unless line if you set the ONE_OFF variable or it will continuously run.
 
@@ -111,15 +127,15 @@ Open the web app and click on the `Configuration` button
 
 Populate the fields, paying attention to mandatory fields highlighted with an asterisk
 
-![](https://private-user-images.githubusercontent.com/1013909/536533865-0fb0fc1d-ba3f-4780-9359-b44f7e027f8c.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3Njg2MTc4ODQsIm5iZiI6MTc2ODYxNzU4NCwicGF0aCI6Ii8xMDEzOTA5LzUzNjUzMzg2NS0wZmIwZmMxZC1iYTNmLTQ3ODAtOTM1OS1iNDRmN2UwMjdmOGMucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI2MDExNyUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNjAxMTdUMDIzOTQ0WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9MTY0MGEzMTQzMTFjNWEzNDQ4OGQwZDFiNTI2ZTJmNWE5ODZmNWJjMTBjYmUwMDJiYjI2YTEwNDE3NzM2MjhmNSZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QifQ.5OPtdxEvueSvsZ4MN3c1sZUS1YMDBWnuD8wP2QrXfMY)
+![](https://private-user-images.githubusercontent.com/1013909/537322507-150aaa35-75cf-47fb-99ae-d72af7696f81.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3Njg3NjgwMDQsIm5iZiI6MTc2ODc2NzcwNCwicGF0aCI6Ii8xMDEzOTA5LzUzNzMyMjUwNy0xNTBhYWEzNS03NWNmLTQ3ZmItOTlhZS1kNzJhZjc2OTZmODEucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI2MDExOCUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNjAxMThUMjAyMTQ0WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9YmMyNzI5YzdlMjhiZjA5NzZlZGZiMGIxZTFmOWI4NjcwMmUyMDQwZGI5ZGU5ODI5NTc2ZGQzZjk0MTFlYTBiOSZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QifQ.CISp_MzjnLGiAOjKoeKvIdNcw0qZerZdPGCpxz4FIDA)
 
-![](https://private-user-images.githubusercontent.com/1013909/536536034-3460b088-f83b-42a9-af42-dd73f6811739.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3Njg2MTc4ODQsIm5iZiI6MTc2ODYxNzU4NCwicGF0aCI6Ii8xMDEzOTA5LzUzNjUzNjAzNC0zNDYwYjA4OC1mODNiLTQyYTktYWY0Mi1kZDczZjY4MTE3MzkucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI2MDExNyUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNjAxMTdUMDIzOTQ0WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9NGIzNWIyMmYzYTE1NGE0ZjRmZjlmNGU3NDhiMWE0ODRiNWVlNWQ0NTc5NzUzYzYyNjZmMDJlZDhiMzQ4MTIwYiZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QifQ.Co_lBv9VNgLae_qTyQjQFrD-efECeO-qUp5wfu52F_g)
+![](https://private-user-images.githubusercontent.com/1013909/537322554-28378810-8312-4b3c-9305-0c1002c16c12.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3Njg3NjgwMDQsIm5iZiI6MTc2ODc2NzcwNCwicGF0aCI6Ii8xMDEzOTA5LzUzNzMyMjU1NC0yODM3ODgxMC04MzEyLTRiM2MtOTMwNS0wYzEwMDJjMTZjMTIucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI2MDExOCUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNjAxMThUMjAyMTQ0WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9ZTExNTJlZjc3M2ZhNDliYjJkNDA3MDAyMDVmZWUxNzA0YjBkOWIzNTNjY2Q1YjZlODBmMTE3NzA2ZTlhZWMzZiZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QifQ.f9PrLXOSJ-ASs60HDi3SzAuzLYwKYe-FPv9S8Y9luH8)
 
 Click the "Update Configuration" button to save your settings.  If you selected a One-Off Run, it will start shortly after saving the configuration.
 
 On adding or updating the web username or password, you will (unless running in Home Assistant) be immediately prompted to login.
 
-![](https://private-user-images.githubusercontent.com/1013909/536534468-01fea28f-e4d9-402a-bcbb-3a1a5db5379d.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3Njg2MTc4ODQsIm5iZiI6MTc2ODYxNzU4NCwicGF0aCI6Ii8xMDEzOTA5LzUzNjUzNDQ2OC0wMWZlYTI4Zi1lNGQ5LTQwMmEtYmNiYi0zYTFhNWRiNTM3OWQucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI2MDExNyUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNjAxMTdUMDIzOTQ0WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9OTI0OGQ0Nzg2YmU2MGJiM2ZlYWZmZDBmZDUxYTA3ZTJlNTdiMDBjYzc4YmIzOGY4MTU1NmQwYjNlYWM2OTFmYiZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QifQ.JFjQ1s8fXHAya638ohkaeIdwMriH3XVg2sk08P9ERpc)
+![](https://private-user-images.githubusercontent.com/1013909/537323069-47548396-1923-4aa0-b386-298be6692d36.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3Njg3NjgxMDAsIm5iZiI6MTc2ODc2NzgwMCwicGF0aCI6Ii8xMDEzOTA5LzUzNzMyMzA2OS00NzU0ODM5Ni0xOTIzLTRhYTAtYjM4Ni0yOThiZTY2OTJkMzYucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI2MDExOCUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNjAxMThUMjAyMzIwWiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9NTg5YTc5NGZhNjMxZTRhYmNiOWYwN2FlZDUzMTE0NGZkOTY3ZWM3ZTgwMDFkMGIzNzlhMTAwZmUzMjAxYWJhYSZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QifQ.m2T1nBxvM-xKOuOlez7dq_Kf-kJQoQf6USxf5hFKQTY)
 
 The main dashboard will show you a summary of the next scheduled run.  If the bot has already run (and successfully saved the results) an additional summary box will be displayed showing the outcome of that run.
 
@@ -127,7 +143,7 @@ The main dashboard will show you a summary of the next scheduled run.  If the bo
 
 The logs page allows you to view the logs generated by the bot.  You can configure the auto refresh frequency and which level of logs you want to see.
 
-![](https://private-user-images.githubusercontent.com/1013909/537070174-71c5ffef-38fb-43e6-aba1-4336c3fd2018.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3Njg2MTc4ODQsIm5iZiI6MTc2ODYxNzU4NCwicGF0aCI6Ii8xMDEzOTA5LzUzNzA3MDE3NC03MWM1ZmZlZi0zOGZiLTQzZTYtYWJhMS00MzM2YzNmZDIwMTgucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI2MDExNyUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNjAxMTdUMDIzOTQ0WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9NzYxNTQ0NGQzODg0MjQxM2ExMjI4NmU1MDA4NWM3N2NhZTE3ODNhNWMyNmVmYTg2MDA0MGUwM2U4MmY5YzYwMSZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QifQ.VgQR8ysOyh8cyFkwwZukrvOwpD1Ki3KR8ZLLCNoUwNI)
+![](https://private-user-images.githubusercontent.com/1013909/537070174-71c5ffef-38fb-43e6-aba1-4336c3fd2018.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3Njg3NjgxMDAsIm5iZiI6MTc2ODc2NzgwMCwicGF0aCI6Ii8xMDEzOTA5LzUzNzA3MDE3NC03MWM1ZmZlZi0zOGZiLTQzZTYtYWJhMS00MzM2YzNmZDIwMTgucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI2MDExOCUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNjAxMThUMjAyMzIwWiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9NWQ4MDA1Mjg2YTYyNzFmMWI1NTg3NDNmZDRkMDU4ZTJjZTVjOWI5MTVlMzFmNTMyMDE2NDZhN2U5Yjg0MDY0ZCZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QifQ.ZuMU_3vNk06nFCXvrLb0KISQpF-QrhBlldVXJecYJq8)
 
 #### Supported Tariffs
 
