@@ -166,6 +166,4 @@ cython_debug/
 .idea/
 
 .DS_Store
-/config
 /patches
-/ssl
