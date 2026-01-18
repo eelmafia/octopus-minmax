@@ -282,6 +282,20 @@ class BotOrchestrator:
             payload['decision']['threshold_pence'],
         )
         config_manager.persist_last_run(payload)
+        action = payload['decision']['action']
+        history_entry = {
+            'datetime': payload['datetime'],
+            'savings_pence': payload['decision']['savings_pence'] if action == "switched" else None,
+            'action': action,
+            'totalconsumption_kwh': payload['totalconsumption_kwh'],
+        }
+        if cost_today:
+            history_entry.update({
+                'consumptioncost_pence': cost_today.get('consumptioncost_pence'),
+                'standingcharge_pence': cost_today.get('standingcharge_pence'),
+                'totalcost_pence': cost_today.get('totalcost_pence'),
+            })
+        config_manager.persist_history_entry(history_entry)
 
     def _execute_switch(self, target_tariff: Tariff, account_info: AccountInfo) -> bool:
         ns = self.notification_service

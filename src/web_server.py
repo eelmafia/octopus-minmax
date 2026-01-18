@@ -7,6 +7,7 @@ import logger as app_logger_module
 import os
 import sys
 from datetime import datetime
+import json
 from werkzeug.security import check_password_hash
 
 logger = logging.getLogger('octobot.web_server')
@@ -96,6 +97,53 @@ def index():
     run_prefix = _next_run_prefix(current_config.get('execution_time', ''))
     last_run_summary = _build_last_run_summary(config_manager.load_last_run())
     return render_template('index.html', missing_config=missing_config, env_config_present=env_config_present, show_cli_env_notice=show_cli_env_notice, config=current_config, tariffs_display=tariffs_display, run_prefix=run_prefix, last_run_summary=last_run_summary)
+
+
+@app.route('/history')
+@require_auth
+def history():
+    history_entries = config_manager.load_history()
+    history_entries = [entry for entry in history_entries if isinstance(entry, dict)]
+    has_history = bool(history_entries)
+    history_entries.sort(key=lambda entry: entry.get('datetime') or "")
+    labels = [entry.get('datetime') for entry in history_entries if entry.get('datetime')]
+    savings = [
+        (entry.get('savings_pence') / 100)
+        if entry.get('datetime') is not None and entry.get('action') == 'switched' and entry.get('savings_pence') is not None
+        else None
+        for entry in history_entries
+        if entry.get('datetime') is not None
+    ]
+    consumption = [
+        entry.get('totalconsumption_kwh')
+        for entry in history_entries
+        if entry.get('datetime') is not None
+    ]
+    consumption_cost = [
+        entry.get('consumptioncost_pence')
+        for entry in history_entries
+        if entry.get('datetime') is not None
+    ]
+    standing_charge = [
+        entry.get('standingcharge_pence')
+        for entry in history_entries
+        if entry.get('datetime') is not None
+    ]
+    total_cost = [
+        entry.get('totalcost_pence')
+        for entry in history_entries
+        if entry.get('datetime') is not None
+    ]
+    return render_template(
+        'history.html',
+        has_history=has_history,
+        labels_json=json.dumps(labels),
+        savings_json=json.dumps(savings),
+        consumption_json=json.dumps(consumption),
+        consumption_cost_json=json.dumps(consumption_cost),
+        standing_charge_json=json.dumps(standing_charge),
+        total_cost_json=json.dumps(total_cost),
+    )
 
 def _format_tariffs(value):
     items = [item.strip() for item in (value or '').split(',') if item.strip()]

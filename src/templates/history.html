@@ -1,0 +1,383 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-bold text-gray-100">History</h2>
+        <a href="." class="text-blue-400 hover:text-blue-300">← Back to Dashboard</a>
+    </div>
+
+    {% if has_history %}
+    <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 mb-6">
+        <div class="flex flex-wrap items-end gap-4 mb-4">
+            <div>
+                <label class="block text-sm text-gray-300 mb-1" for="history-mode">Data</label>
+                <select id="history-mode" class="bg-gray-900 border border-gray-600 text-gray-100 rounded px-3 py-2">
+                    <option value="savings">Savings</option>
+                    <option value="cost">Daily Cost</option>
+                    <option value="consumption">Consumption</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm text-gray-300 mb-1" for="history-start">Start date</label>
+                <input id="history-start" type="date" class="bg-gray-900 border border-gray-600 text-gray-100 rounded px-3 py-2">
+            </div>
+            <div>
+                <label class="block text-sm text-gray-300 mb-1" for="history-end">End date</label>
+                <input id="history-end" type="date" class="bg-gray-900 border border-gray-600 text-gray-100 rounded px-3 py-2">
+            </div>
+            <div>
+                <label class="block text-sm text-gray-300 mb-1" for="history-chart-type">Type</label>
+                <select id="history-chart-type" class="bg-gray-900 border border-gray-600 text-gray-100 rounded px-3 py-2">
+                    <option value="line">Line</option>
+                    <option value="bar">Bar</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm text-gray-300 mb-1" for="history-granularity">Granularity</label>
+                <select id="history-granularity" class="bg-gray-900 border border-gray-600 text-gray-100 rounded px-3 py-2">
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                </select>
+            </div>
+            <div class="flex gap-2">
+                <button id="history-apply" type="button" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg">Apply</button>
+                <button id="history-reset" type="button" class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg">Reset</button>
+            </div>
+        </div>
+        <canvas id="savings-chart" height="120"></canvas>
+    </div>
+
+    <div class="text-sm text-gray-400">
+        <a id="history-download" href="#" class="text-blue-400 hover:text-blue-300">Download CSV</a>
+    </div>
+    {% else %}
+    <div class="bg-gray-800 border border-gray-700 rounded-2xl p-10 text-center text-gray-300">
+        Nothing to see - come back soon!
+    </div>
+    {% endif %}
+</div>
+
+{% if has_history %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.umd.min.js"></script>
+<script>
+    if (window.ChartZoom) {
+        Chart.register(window.ChartZoom);
+    }
+    const labels = {{ labels_json | safe }};
+    const savings = {{ savings_json | safe }};
+    const consumption = {{ consumption_json | safe }};
+    const consumptionCost = {{ consumption_cost_json | safe }};
+    const standingCharge = {{ standing_charge_json | safe }};
+    const totalCost = {{ total_cost_json | safe }};
+    const ctx = document.getElementById('savings-chart');
+    const original = labels.map((label, idx) => ({
+        label,
+        savings: savings[idx],
+        consumption: consumption[idx],
+        consumptionCost: consumptionCost[idx],
+        standingCharge: standingCharge[idx],
+        totalCost: totalCost[idx],
+    }));
+    const startInput = document.getElementById('history-start');
+    const endInput = document.getElementById('history-end');
+    const modeSelect = document.getElementById('history-mode');
+    const chartTypeSelect = document.getElementById('history-chart-type');
+    const granularitySelect = document.getElementById('history-granularity');
+    const downloadLink = document.getElementById('history-download');
+
+    function formatBucketLabel(date, granularity) {
+        if (granularity === 'monthly') {
+            const year = date.getUTCFullYear();
+            const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+            return `${year}-${month}`;
+        }
+        return date.toISOString().slice(0, 10);
+    }
+
+    function bucketDate(date, granularity) {
+        const bucket = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+        if (granularity === 'weekly') {
+            const day = bucket.getUTCDay();
+            const diff = (day + 6) % 7;
+            bucket.setUTCDate(bucket.getUTCDate() - diff);
+        } else if (granularity === 'monthly') {
+            bucket.setUTCDate(1);
+        }
+        return bucket;
+    }
+
+    function aggregateEntries(entries, granularity) {
+        const buckets = new Map();
+        entries.forEach((entry) => {
+            if (!entry.label) {
+                return;
+            }
+            const date = new Date(entry.label);
+            if (Number.isNaN(date.getTime())) {
+                return;
+            }
+            const bucket = bucketDate(date, granularity);
+            const key = bucket.toISOString();
+            if (!buckets.has(key)) {
+                buckets.set(key, {
+                    label: formatBucketLabel(bucket, granularity),
+                    savings: 0,
+                    consumption: 0,
+                    consumptionCost: 0,
+                    standingCharge: 0,
+                    totalCost: 0,
+                    counts: {
+                        savings: 0,
+                        consumption: 0,
+                        consumptionCost: 0,
+                        standingCharge: 0,
+                        totalCost: 0
+                    }
+                });
+            }
+            const bucketEntry = buckets.get(key);
+            if (entry.savings != null) {
+                bucketEntry.savings += entry.savings;
+                bucketEntry.counts.savings += 1;
+            }
+            if (entry.consumption != null) {
+                bucketEntry.consumption += entry.consumption;
+                bucketEntry.counts.consumption += 1;
+            }
+            if (entry.consumptionCost != null) {
+                bucketEntry.consumptionCost += entry.consumptionCost;
+                bucketEntry.counts.consumptionCost += 1;
+            }
+            if (entry.standingCharge != null) {
+                bucketEntry.standingCharge += entry.standingCharge;
+                bucketEntry.counts.standingCharge += 1;
+            }
+            if (entry.totalCost != null) {
+                bucketEntry.totalCost += entry.totalCost;
+                bucketEntry.counts.totalCost += 1;
+            }
+        });
+        return Array.from(buckets.values()).map((entry) => {
+            if (!entry.counts.savings) {
+                entry.savings = null;
+            }
+            if (!entry.counts.consumption) {
+                entry.consumption = null;
+            }
+            if (!entry.counts.consumptionCost) {
+                entry.consumptionCost = null;
+            }
+            if (!entry.counts.standingCharge) {
+                entry.standingCharge = null;
+            }
+            if (!entry.counts.totalCost) {
+                entry.totalCost = null;
+            }
+            return entry;
+        }).sort((a, b) => a.label.localeCompare(b.label));
+    }
+
+    function buildDatasets(entries, mode) {
+        if (mode === 'cost') {
+            return [
+                {
+                    label: 'Consumption Cost (£)',
+                    data: entries.map((entry) => entry.consumptionCost != null ? entry.consumptionCost / 100 : null),
+                    borderColor: '#60a5fa',
+                    backgroundColor: 'rgba(96, 165, 250, 0.2)',
+                    fill: chartTypeSelect.value === 'line' ? false : true,
+                    tension: 0.25
+                },
+                {
+                    label: 'Standing Charge (£)',
+                    data: entries.map((entry) => entry.standingCharge != null ? entry.standingCharge / 100 : null),
+                    borderColor: '#34d399',
+                    backgroundColor: 'rgba(52, 211, 153, 0.2)',
+                    fill: chartTypeSelect.value === 'line' ? false : true,
+                    tension: 0.25
+                },
+                {
+                    label: 'Total Cost (£)',
+                    data: entries.map((entry) => entry.totalCost != null ? entry.totalCost / 100 : null),
+                    borderColor: '#fbbf24',
+                    backgroundColor: 'rgba(251, 191, 36, 0.2)',
+                    fill: chartTypeSelect.value === 'line' ? false : true,
+                    tension: 0.25
+                }
+            ];
+        }
+        if (mode === 'consumption') {
+            return [{
+                label: 'Consumption (kWh)',
+                data: entries.map((entry) => entry.consumption != null ? entry.consumption : null),
+                borderColor: '#a78bfa',
+                backgroundColor: 'rgba(167, 139, 250, 0.2)',
+                fill: true,
+                tension: 0.25
+            }];
+        }
+        return [{
+            label: 'Savings (£)',
+            data: entries.map((entry) => entry.savings != null ? entry.savings : null),
+            borderColor: '#60a5fa',
+            backgroundColor: 'rgba(96, 165, 250, 0.2)',
+            fill: true,
+            spanGaps: true,
+            tension: 0.25
+        }];
+    }
+
+    function currentData() {
+        const labels = chart.data.labels || [];
+        const datasets = chart.data.datasets || [];
+        return { labels, datasets };
+    }
+
+    function updateChart(entries) {
+        const granularity = granularitySelect.value;
+        const aggregated = aggregateEntries(entries, granularity);
+        chart.data.labels = aggregated.map((entry) => entry.label);
+        chart.data.datasets = buildDatasets(aggregated, modeSelect.value);
+        if (chart.options.scales && chart.options.scales.y && chart.options.scales.y.title) {
+            if (modeSelect.value === 'consumption') {
+                chart.options.scales.y.title.text = 'kWh';
+            } else if (modeSelect.value === 'savings') {
+                chart.options.scales.y.title.text = '£';
+            } else {
+                chart.options.scales.y.title.text = '£';
+            }
+        }
+        chart.update();
+    }
+
+    function applyFilter() {
+        const start = startInput.value ? new Date(startInput.value) : null;
+        const end = endInput.value ? new Date(endInput.value) : null;
+        let filtered = original.filter((entry) => {
+            if (!entry.label) {
+                return false;
+            }
+            const date = new Date(entry.label);
+            if (start && date < start) {
+                return false;
+            }
+            if (end && date > end) {
+                return false;
+            }
+            return true;
+        });
+        if (modeSelect.value === 'savings') {
+            filtered = filtered.filter((entry) => entry.savings != null);
+        }
+        updateChart(filtered);
+    }
+
+    downloadLink.addEventListener('click', (event) => {
+        event.preventDefault();
+        const current = currentData();
+        const headers = ['datetime'].concat(current.datasets.map((dataset) => dataset.label));
+        const rows = [headers];
+        current.labels.forEach((label, idx) => {
+            if (!label) {
+                return;
+            }
+            const row = [label];
+            current.datasets.forEach((dataset) => {
+                row.push(dataset.data[idx]);
+            });
+            rows.push(row);
+        });
+        const csv = rows.map((row) => row.join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const mode = modeSelect.value;
+        const prefix = mode === 'cost' ? 'cost-history' : mode === 'consumption' ? 'consumption-history' : 'savings-history';
+        link.download = `${prefix}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    });
+
+    const chart = new Chart(ctx, {
+        type: chartTypeSelect.value,
+        data: {
+            labels,
+            datasets: buildDatasets(original, 'savings')
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    ticks: {
+                        color: '#cbd5f5',
+                        callback: function(value, index) {
+                            const label = this.getLabelForValue(index);
+                            if (!label) {
+                                return '';
+                            }
+                            const date = new Date(label);
+                            if (Number.isNaN(date.getTime())) {
+                                return label;
+                            }
+                            return date.toLocaleDateString('en-GB');
+                        }
+                    },
+                    grid: { color: 'rgba(148, 163, 184, 0.2)' },
+                    title: {
+                        display: true,
+                        text: 'Date',
+                        color: '#cbd5f5'
+                    }
+                },
+                y: {
+                    ticks: { color: '#cbd5f5' },
+                    grid: { color: 'rgba(148, 163, 184, 0.2)' },
+                    title: {
+                        display: true,
+                        text: '£',
+                        color: '#cbd5f5'
+                    }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: '#e5e7eb' } },
+                zoom: {
+                    zoom: {
+                        wheel: { enabled: true },
+                        pinch: { enabled: true },
+                        mode: 'x',
+                    },
+                    pan: {
+                        enabled: true,
+                        mode: 'x',
+                    }
+                }
+            }
+        }
+    });
+
+    updateChart(original);
+    document.getElementById('history-apply').addEventListener('click', applyFilter);
+    document.getElementById('history-reset').addEventListener('click', () => {
+        startInput.value = '';
+        endInput.value = '';
+        updateChart(original);
+        if (chart.resetZoom) {
+            chart.resetZoom();
+        }
+    });
+    modeSelect.addEventListener('change', applyFilter);
+    granularitySelect.addEventListener('change', applyFilter);
+    chartTypeSelect.addEventListener('change', () => {
+        chart.config.type = chartTypeSelect.value;
+        applyFilter();
+    });
+</script>
+{% endif %}
+{% endblock %}

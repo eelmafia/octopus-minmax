@@ -9,6 +9,7 @@ from werkzeug.security import generate_password_hash
 _config_lock = threading.Lock()
 _CONFIG_PATH = os.getenv("OCTOBOT_CONFIG_PATH", "/config/config.json")
 _LASTRUN_PATH = os.path.join(os.path.dirname(_CONFIG_PATH), "lastrun.json")
+_HISTORY_PATH = os.path.join(os.path.dirname(_CONFIG_PATH), "history.json")
 logger = logging.getLogger('octobot.config_manager')
 _MIGRATION_NOTICE = None
 _OPTIONS_PATH = "/data/options.json"
@@ -277,6 +278,38 @@ def load_last_run():
         except Exception as exc:
             logger.warning("Failed to load last run from %s: %s", _LASTRUN_PATH, exc)
             return None
+
+
+def persist_history_entry(entry):
+    if not isinstance(entry, dict):
+        return
+    with _config_lock:
+        try:
+            os.makedirs(os.path.dirname(_HISTORY_PATH), exist_ok=True)
+            history = []
+            if os.path.exists(_HISTORY_PATH):
+                with open(_HISTORY_PATH, 'r', encoding='utf-8') as f:
+                    history = json.load(f)
+            if not isinstance(history, list):
+                history = []
+            history.append(entry)
+            with open(_HISTORY_PATH, 'w', encoding='utf-8') as f:
+                json.dump(history, f, indent=2, sort_keys=True)
+        except Exception as exc:
+            logger.warning("Failed to persist history to %s: %s", _HISTORY_PATH, exc)
+
+
+def load_history():
+    with _config_lock:
+        if not os.path.exists(_HISTORY_PATH):
+            return []
+        try:
+            with open(_HISTORY_PATH, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            return data if isinstance(data, list) else []
+        except Exception as exc:
+            logger.warning("Failed to load history from %s: %s", _HISTORY_PATH, exc)
+            return []
 
 
 def validate_config(config_dict, require_web_auth=True):
