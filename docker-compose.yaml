@@ -17,17 +17,17 @@ services:
       # config file on first run. If they are kept, they will override the config file settings
       # until removed.
       - OCTOBOT_CONFIG_PATH=/config/config.json # Optional: config file path
-      - API_KEY=<your_api_key> # Required: Octopus Energy API key (sk_live_...)
-      - ACC_NUMBER=<your_account_number> # Required: account number (starts with A-)
+      - API_KEY=${API_KEY:-} # Required: Octopus Energy API key (sk_live_...)
+      - ACC_NUMBER=${ACC_NUMBER:-} # Required: account number (starts with A-)
       - BASE_URL=https://api.octopus.energy/v1 # Required: Octopus API base URL
-      - NOTIFICATION_URLS=<your_apprise_notification_urls> # Optional: comma-separated Apprise URLs
-      - BATCH_NOTIFICATIONS=false # Optional: send notifications in
+      - NOTIFICATION_URLS=${NOTIFICATION_URLS:-} # Optional: comma-separated Apprise URLs
+      - BATCH_NOTIFICATIONS=false # Optional: send notifications in batches
       - ONLY_RESULTS_NOTIFICATIONS=false # Optional: only send final results as notification
       - MQTT_ENABLED=false # Optional: enable MQTT
       - MQTT_HOST=<your_mqtt_host> # Required if broker enabled: MQTT broker host
       - MQTT_PORT=1883 # Required if broker enabled: MQTT broker port
-      - MQTT_USERNAME=<your_mqtt_username> # Optional: MQTT username
-      - MQTT_PASSWORD=<your_mqtt_password> # Optional: MQTT password
+      - MQTT_USERNAME=${MQTT_USERNAME:-} # Optional: MQTT username
+      - MQTT_PASSWORD=${MQTT_PASSWORD:-} # Optional: MQTT password
       - MQTT_TOPIC=octobot/results # Optional: base MQTT topic
       - MQTT_USE_TLS=false # Optional: MQTT TLS
       - MQTT_TLS_INSECURE=false # Optional: allow insecure TLS
@@ -38,8 +38,8 @@ services:
       - SWITCH_THRESHOLD=2 # Optional: switch threshold in pence
       - TARIFFS=go,agile,flexible # Required: tariff IDs list
       - ONE_OFF=false # Optional: run once and exit
-      - DRY_RUN=false # Optional: notify only, don't switch
-      - WEB_USERNAME=admin # Optional: web UI username
-      - WEB_PASSWORD=admin # Optional: web UI password
+      - DRY_RUN=true # Optional: notify only, don't switch
+      - WEB_USERNAME=${WEB_USERNAME:-admin} # Optional: web UI username
+      - WEB_PASSWORD=${WEB_PASSWORD:-admin} # Optional: web UI password
       - WEB_PORT=5050 # Optional: web UI port
       - NO_WEB_SERVER=false # Optional: disable web server
