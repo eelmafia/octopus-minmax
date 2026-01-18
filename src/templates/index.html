@@ -1,8 +1,24 @@
 {% extends "base.html" %}
 
+{% block flash %}{% endblock %}
+
 {% block content %}
 <div class="flex flex-col items-center justify-center min-h-[60vh]">
     <h2 class="text-3xl font-bold mb-12 text-gray-100">Dashboard</h2>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="mb-6 w-full max-w-4xl p-4 rounded-lg {% if category == 'error' %}bg-red-900 border border-red-700 text-red-100{% else %}bg-green-900 border border-green-700 text-green-100{% endif %}" data-flash>
+                    <div class="flex items-start justify-between gap-4">
+                        <div>{{ message }}</div>
+                        <button type="button" class="text-lg leading-none text-gray-200 hover:text-white" aria-label="Close notification" onclick="this.closest('[data-flash]').remove()">✕</button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 
     {% if missing_config %}
     <div class="w-full max-w-4xl mb-8 bg-yellow-900 border border-yellow-700 text-yellow-100 rounded-lg p-4 text-center">

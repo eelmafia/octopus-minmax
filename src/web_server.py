@@ -66,6 +66,9 @@ def require_auth(f):
 @require_auth
 def index():
     """Homepage - Dashboard with navigation buttons"""
+    migration_notice = config_manager.pop_migration_notice()
+    if migration_notice:
+        flash(migration_notice, 'success')
     missing_config = not os.path.exists(CONFIG_PATH)
     current_config = config_manager.get_config()
     tariffs_display = _format_tariffs(current_config.get('tariffs', ''))
@@ -233,6 +236,9 @@ def config_page():
 
         return redirect('config')
 
+    migration_notice = config_manager.pop_migration_notice()
+    if migration_notice:
+        flash(migration_notice, 'success')
     config_manager.load_persisted_config()
     current_config = config_manager.get_config()
     missing_config = not os.path.exists(CONFIG_PATH)

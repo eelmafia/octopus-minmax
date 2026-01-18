@@ -10,6 +10,18 @@ _config_lock = threading.Lock()
 _CONFIG_PATH = os.getenv("OCTOBOT_CONFIG_PATH", "/config/config.json")
 _LASTRUN_PATH = os.path.join(os.path.dirname(_CONFIG_PATH), "lastrun.json")
 logger = logging.getLogger('octobot.config_manager')
+_MIGRATION_NOTICE = None
+_OPTIONS_PATH = "/data/options.json"
+
+def _set_migration_notice(message):
+    global _MIGRATION_NOTICE
+    _MIGRATION_NOTICE = message
+
+def pop_migration_notice():
+    global _MIGRATION_NOTICE
+    notice = _MIGRATION_NOTICE
+    _MIGRATION_NOTICE = None
+    return notice
 
 def _env_overrides(key):
     return os.getenv(key) not in (None, "")
@@ -102,6 +114,27 @@ def load_persisted_config():
 def warn_if_missing_config():
     if not os.path.exists(_CONFIG_PATH):
         logger.warning("Config file missing at %s. Update configuration to create it.", _CONFIG_PATH)
+
+def migrate_options_if_needed():
+    """Migrate Home Assistant options.json into config.json when missing."""
+    if os.path.exists(_CONFIG_PATH):
+        return False
+    if not os.path.exists(_OPTIONS_PATH):
+        return False
+    try:
+        with open(_OPTIONS_PATH, 'r', encoding='utf-8') as f:
+            values = json.load(f)
+        if not isinstance(values, dict):
+            logger.warning("Options file %s was not a JSON object.", _OPTIONS_PATH)
+            return False
+        _apply_persisted_values(values)
+        _persist_config()
+        _set_migration_notice("Migrated settings from add-on options to config.json.")
+        logger.info("Migrated config from %s to %s", _OPTIONS_PATH, _CONFIG_PATH)
+        return True
+    except Exception as exc:
+        logger.warning("Failed to migrate options from %s: %s", _OPTIONS_PATH, exc)
+        return False
 
 def get_config():
     """Get current configuration as dictionary (thread-safe)"""

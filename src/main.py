@@ -10,6 +10,7 @@ app_logger = logger.logger
 def _is_ingress_environment():
     return bool(os.getenv("SUPERVISOR_TOKEN") or os.getenv("HASSIO_TOKEN") or os.path.exists("/data/options.json"))
 
+config_manager.migrate_options_if_needed()
 config_manager.load_persisted_config()
 config_manager.warn_if_missing_config()
 
