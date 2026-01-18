@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div id="top" class="max-w-4xl mx-auto" data-error-field="{{ error_field }}" data-focus-top="{{ '1' if focus_top else '' }}" tabindex="-1">
+<div id="top" class="scroll-mt-24" data-error-field="{{ error_field }}" data-focus-top="{{ '1' if focus_top else '' }}" tabindex="-1"></div>
+<div class="max-w-4xl mx-auto">
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-3xl font-bold text-gray-100">Configuration</h2>
         <a href="." class="text-blue-400 hover:text-blue-300">← Back to Dashboard</a>
@@ -26,7 +27,7 @@
 
     <form method="POST" class="space-y-6">
         <!-- API Settings -->
-        <div id="api-settings" class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+        <div id="api-settings" class="bg-gray-800 border border-gray-700 rounded-lg p-6 scroll-mt-24">
             <h3 class="text-xl font-bold text-gray-100 mb-4">API Settings</h3>
 
             <div class="space-y-4">
@@ -75,7 +76,7 @@
         </div>
 
         <!-- Execution Settings -->
-        <div id="execution-settings" class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+        <div id="execution-settings" class="bg-gray-800 border border-gray-700 rounded-lg p-6 scroll-mt-24">
             <h3 class="text-xl font-bold text-gray-100 mb-4">Execution Settings</h3>
 
             <div class="space-y-4">
@@ -128,7 +129,7 @@
         </div>
 
         <!-- Tariff Settings -->
-        <div id="tariff-settings" class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+        <div id="tariff-settings" class="bg-gray-800 border border-gray-700 rounded-lg p-6 scroll-mt-24">
             <h3 class="text-xl font-bold text-gray-100 mb-4">Tariff Settings</h3>
 
                 <div>
@@ -150,7 +151,7 @@
         </div>
 
         <!-- Notification Settings -->
-        <div id="notification-settings" class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+        <div id="notification-settings" class="bg-gray-800 border border-gray-700 rounded-lg p-6 scroll-mt-24">
             <h3 class="text-xl font-bold text-gray-100 mb-4">Notification Settings</h3>
 
             <div class="space-y-4">
@@ -191,7 +192,7 @@
         </div>
 
         <!-- MQTT Settings -->
-        <div id="mqtt-settings" class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+        <div id="mqtt-settings" class="bg-gray-800 border border-gray-700 rounded-lg p-6 scroll-mt-24">
             <h3 class="text-xl font-bold text-gray-100 mb-4">MQTT Settings</h3>
 
             <div class="space-y-4">
@@ -329,7 +330,7 @@
         </div>
 
         <!-- Web Server Settings -->
-        <div id="web-settings" class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+        <div id="web-settings" class="bg-gray-800 border border-gray-700 rounded-lg p-6 scroll-mt-24">
             <h3 class="text-xl font-bold text-gray-100 mb-4">Web Server</h3>
 
             <div class="space-y-4">
