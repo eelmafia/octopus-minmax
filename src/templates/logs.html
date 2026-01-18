@@ -7,9 +7,35 @@
         <a href="." class="text-blue-400 hover:text-blue-300">← Back to Dashboard</a>
     </div>
 
+    <div class="flex items-center justify-end mb-3 gap-4">
+        <label class="flex items-center text-gray-300 text-sm">
+            <span class="mr-2">Level</span>
+            <select id="log-level" class="bg-gray-900 border border-gray-600 rounded px-2 py-1 text-gray-200">
+                <option value="ALL" {% if selected_level == "ALL" %}selected{% endif %}>All</option>
+                <option value="DEBUG" {% if selected_level == "DEBUG" %}selected{% endif %}>Debug</option>
+                <option value="INFO" {% if selected_level == "INFO" %}selected{% endif %}>Info</option>
+                <option value="WARNING" {% if selected_level == "WARNING" %}selected{% endif %}>Warning</option>
+                <option value="ERROR" {% if selected_level == "ERROR" %}selected{% endif %}>Error</option>
+                <option value="CRITICAL" {% if selected_level == "CRITICAL" %}selected{% endif %}>Critical</option>
+            </select>
+        </label>
+        <label class="flex items-center text-gray-300 text-sm">
+            <span class="mr-2">Refresh</span>
+            <select id="refresh-interval" class="bg-gray-900 border border-gray-600 rounded px-2 py-1 text-gray-200">
+                <option value="off">Off</option>
+                <option value="1000">1s</option>
+                <option value="2000">2s</option>
+                <option value="5000" selected>5s</option>
+                <option value="10000">10s</option>
+                <option value="30000">30s</option>
+                <option value="60000">60s</option>
+            </select>
+        </label>
+    </div>
+
     <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 overflow-hidden">
         <div id="log-container" class="bg-black rounded p-4 overflow-y-auto" style="max-height: 70vh;">
-            <div class="text-sm font-mono text-gray-300">
+            <div id="log-entries" class="text-sm font-mono text-gray-300">
                 {% for entry in log_entries %}
                     <div class="border-b border-gray-800 pb-2 mb-2 whitespace-pre-wrap">{{ entry }}</div>
                 {% endfor %}
@@ -19,10 +45,85 @@
 </div>
 
 <script>
-    // Scroll to bottom on page load
+    const logContainer = document.getElementById('log-container');
+    const logEntries = document.getElementById('log-entries');
+    const logLevel = document.getElementById('log-level');
+    const refreshInterval = document.getElementById('refresh-interval');
+    let lastRendered = '';
+    let refreshTimer = null;
+
+    function isNearBottom(element) {
+        return element.scrollHeight - element.scrollTop - element.clientHeight < 40;
+    }
+
+    function escapeHtml(value) {
+        return value
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    async function refreshLogs() {
+        const wasAtBottom = isNearBottom(logContainer);
+        try {
+            const response = await fetch('/logs/entries', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                cache: 'no-store',
+                body: JSON.stringify({ lines: 200, level: logLevel.value })
+            });
+            if (!response.ok) {
+                return;
+            }
+            const entries = await response.json();
+            const nextRender = entries
+                .map((entry) => `<div class="border-b border-gray-800 pb-2 mb-2 whitespace-pre-wrap">${escapeHtml(entry)}</div>`)
+                .join('');
+            if (nextRender !== lastRendered) {
+                logEntries.innerHTML = nextRender;
+                lastRendered = nextRender;
+            }
+            if (wasAtBottom) {
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+        } catch (error) {
+            // Ignore transient polling errors.
+        }
+    }
+
+    function startAutoRefresh() {
+        if (refreshTimer) {
+            return;
+        }
+        const delay = Number(refreshInterval.value);
+        if (!delay) {
+            return;
+        }
+        refreshTimer = setInterval(refreshLogs, delay);
+    }
+
+    function stopAutoRefresh() {
+        if (!refreshTimer) {
+            return;
+        }
+        clearInterval(refreshTimer);
+        refreshTimer = null;
+    }
+
     window.addEventListener('load', function() {
-        const logContainer = document.getElementById('log-container');
         logContainer.scrollTop = logContainer.scrollHeight;
+        startAutoRefresh();
+    });
+
+    logLevel.addEventListener('change', function() {
+        refreshLogs();
+    });
+
+    refreshInterval.addEventListener('change', function() {
+        stopAutoRefresh();
+        startAutoRefresh();
     });
 </script>
 {% endblock %}

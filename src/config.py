@@ -12,6 +12,21 @@ BASE_URL = os.getenv("BASE_URL", "https://api.octopus.energy/v1")
 NOTIFICATION_URLS = os.getenv("NOTIFICATION_URLS", "")
 # Whether to send all the notifications as a batch or individually
 BATCH_NOTIFICATIONS = os.getenv("BATCH_NOTIFICATIONS", "false") in ["true", "True", "1"]
+# When enabled, suppress all notifications except the final results summary.
+ONLY_RESULTS_NOTIFICATIONS = os.getenv("ONLY_RESULTS_NOTIFICATIONS", "false") in ["true", "True", "1"]
+
+# MQTT settings (optional)
+MQTT_ENABLED = os.getenv("MQTT_ENABLED", "false") in ["true", "True", "1"]
+MQTT_HOST = os.getenv("MQTT_HOST", "")
+MQTT_PORT = int(os.getenv("MQTT_PORT", 1883))
+MQTT_USERNAME = os.getenv("MQTT_USERNAME", "")
+MQTT_PASSWORD = os.getenv("MQTT_PASSWORD", "")
+MQTT_TOPIC = os.getenv("MQTT_TOPIC", "")
+MQTT_USE_TLS = os.getenv("MQTT_USE_TLS", "false") in ["true", "True", "1"]
+MQTT_TLS_INSECURE = os.getenv("MQTT_TLS_INSECURE", "false") in ["true", "True", "1"]
+MQTT_CA_CERT = os.getenv("MQTT_CA_CERT", "")
+MQTT_CLIENT_CERT = os.getenv("MQTT_CLIENT_CERT", "")
+MQTT_CLIENT_KEY = os.getenv("MQTT_CLIENT_KEY", "")
 
 EXECUTION_TIME = os.getenv("EXECUTION_TIME", "23:00")
 
@@ -29,6 +44,7 @@ ONE_OFF_EXECUTED = False
 DRY_RUN = os.getenv("DRY_RUN", "false") in ["true", "True", "1"]
 
 # Web UI authentication
-WEB_USERNAME = os.getenv("WEB_USERNAME", "admin")
-WEB_PASSWORD = os.getenv("WEB_PASSWORD", "admin")
+WEB_USERNAME = os.getenv("WEB_USERNAME", "")
+WEB_PASSWORD = os.getenv("WEB_PASSWORD", "")
 WEB_PORT = int(os.getenv("WEB_PORT", 5050))
+NO_WEB_SERVER = os.getenv("NO_WEB_SERVER", "false") in ["true", "True", "1"]
