@@ -8,12 +8,6 @@ import os
 import sys
 from datetime import datetime
 from werkzeug.security import check_password_hash
-import ssl
-import threading
-try:
-    import paho.mqtt.client as mqtt
-except Exception:  # pragma: no cover - optional dependency at runtime
-    mqtt = None
 
 logger = logging.getLogger('octobot.web_server')
 
@@ -316,79 +310,6 @@ def logs_entries():
     return jsonify(log_entries)
 
 
-@app.route('/mqtt/test', methods=['POST'])
-@require_auth
-def mqtt_test():
-    payload = request.get_json(silent=True) or request.form.to_dict()
-    host = (payload or {}).get('mqtt_host') or config.MQTT_HOST
-    port_raw = (payload or {}).get('mqtt_port') or config.MQTT_PORT
-    username = (payload or {}).get('mqtt_username') or config.MQTT_USERNAME
-    password = (payload or {}).get('mqtt_password') or config.MQTT_PASSWORD
-    use_tls = str((payload or {}).get('mqtt_use_tls') or config.MQTT_USE_TLS).lower() in ['true', '1', 'yes', 'on']
-    tls_insecure = str((payload or {}).get('mqtt_tls_insecure') or config.MQTT_TLS_INSECURE).lower() in ['true', '1', 'yes', 'on']
-    ca_cert = (payload or {}).get('mqtt_ca_cert') or config.MQTT_CA_CERT
-    client_cert = (payload or {}).get('mqtt_client_cert') or config.MQTT_CLIENT_CERT
-    client_key = (payload or {}).get('mqtt_client_key') or config.MQTT_CLIENT_KEY
-    try:
-        port = int(port_raw)
-    except (TypeError, ValueError):
-        logger.warning("MQTT test failed: invalid port %r", port_raw)
-        return jsonify({'ok': False, 'message': 'Invalid port'}), 400
-    if not host:
-        logger.warning("MQTT test failed: missing host")
-        return jsonify({'ok': False, 'message': 'MQTT host is required'}), 400
-    if mqtt is None:
-        logger.warning("MQTT test failed: paho-mqtt not installed")
-        return jsonify({'ok': False, 'message': 'paho-mqtt is not installed'}), 500
-    try:
-        connect_event = threading.Event()
-        result = {'rc': None}
-
-        def _on_connect(client, userdata, flags, rc, properties=None):
-            result['rc'] = rc
-            connect_event.set()
-
-        def _on_disconnect(client, userdata, rc, properties=None):
-            if result['rc'] is None:
-                result['rc'] = rc
-            connect_event.set()
-
-        client = mqtt.Client()
-        if username or password:
-            client.username_pw_set(username or None, password or None)
-        if use_tls:
-            if ca_cert or client_cert or client_key:
-                client.tls_set(
-                    ca_certs=ca_cert or None,
-                    certfile=client_cert or None,
-                    keyfile=client_key or None,
-                    tls_version=ssl.PROTOCOL_TLS_CLIENT,
-                )
-            else:
-                client.tls_set(tls_version=ssl.PROTOCOL_TLS_CLIENT)
-            if tls_insecure:
-                client.tls_insecure_set(True)
-        client.on_connect = _on_connect
-        client.on_disconnect = _on_disconnect
-        client.connect(host, port, keepalive=10)
-        client.loop_start()
-        connected = connect_event.wait(timeout=5)
-        client.disconnect()
-        client.loop_stop()
-        if not connected:
-            logger.warning("MQTT test failed: connection timed out (%s:%s)", host, port)
-            return jsonify({'ok': False, 'message': 'Connection timed out'}), 200
-        if result['rc'] == 0:
-            logger.debug("MQTT test succeeded: connected to %s:%s", host, port)
-            return jsonify({'ok': True, 'message': f'Connected to {host}:{port}'}), 200
-        error_text = mqtt.connack_string(result['rc'])
-        logger.warning("MQTT test failed: %s (%s:%s)", error_text, host, port)
-        return jsonify({'ok': False, 'message': f'Connection failed: {error_text}'}), 200
-    except Exception as exc:
-        logger.warning("MQTT test failed: %s (%s:%s)", exc, host, port)
-        return jsonify({'ok': False, 'message': f'Connection failed: {exc}'}), 200
-
-
 def tail_file(filepath, n):
     """Read last n lines from file, or entire file if n is None"""
     try:
@@ -470,11 +391,6 @@ def _error_to_field_anchor(message):
         "Notification URLs are required when batch notifications are enabled": ("notification_urls", "notification-settings"),
         "Web username is required": ("web_username", "web-settings"),
         "Web password is required": ("web_password", "web-settings"),
-        "MQTT host is required when MQTT is enabled": ("mqtt_host", "mqtt-settings"),
-        "MQTT port is required when MQTT is enabled": ("mqtt_port", "mqtt-settings"),
-        "MQTT port must be a positive number": ("mqtt_port", "mqtt-settings"),
-        "MQTT port must be a number": ("mqtt_port", "mqtt-settings"),
-        "MQTT topic is required when MQTT is enabled": ("mqtt_topic", "mqtt-settings"),
     }
     return mapping.get(message, ("", ""))
 

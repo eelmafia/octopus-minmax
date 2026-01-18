@@ -10,7 +10,6 @@ services:
     volumes:
       - ./logs:/app/logs
       - ./config:/config
-      - ./ssl:/ssl # Optional if using MQTT over TLS
     environment:
       - TZ=Europe/London
       # These environment variables can be removed after first run - they will be copied to the 
@@ -23,17 +22,6 @@ services:
       - NOTIFICATION_URLS=${NOTIFICATION_URLS:-} # Optional: comma-separated Apprise URLs
       - BATCH_NOTIFICATIONS=false # Optional: send notifications in batches
       - ONLY_RESULTS_NOTIFICATIONS=false # Optional: only send final results as notification
-      - MQTT_ENABLED=false # Optional: enable MQTT
-      - MQTT_HOST=<your_mqtt_host> # Required if broker enabled: MQTT broker host
-      - MQTT_PORT=1883 # Required if broker enabled: MQTT broker port
-      - MQTT_USERNAME=${MQTT_USERNAME:-} # Optional: MQTT username
-      - MQTT_PASSWORD=${MQTT_PASSWORD:-} # Optional: MQTT password
-      - MQTT_TOPIC=octobot/results # Optional: base MQTT topic
-      - MQTT_USE_TLS=false # Optional: MQTT TLS
-      - MQTT_TLS_INSECURE=false # Optional: allow insecure TLS
-      - MQTT_CA_CERT=/ssl/ca.pem # Optional: CA cert path
-      - MQTT_CLIENT_CERT=/ssl/client.pem # Optional: client cert path
-      - MQTT_CLIENT_KEY=/ssl/client.key # Optional: client key path
       - EXECUTION_TIME=23:00 # Required: daily run time (HH:MM)
       - SWITCH_THRESHOLD=2 # Optional: switch threshold in pence
       - TARIFFS=go,agile,flexible # Required: tariff IDs list

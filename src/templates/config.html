@@ -13,7 +13,6 @@
         <a href="#execution-settings" class="text-blue-400 hover:text-blue-300">Execution Settings</a>
         <a href="#tariff-settings" class="text-blue-400 hover:text-blue-300">Tariff Settings</a>
         <a href="#notification-settings" class="text-blue-400 hover:text-blue-300">Notification Settings</a>
-        <a href="#mqtt-settings" class="text-blue-400 hover:text-blue-300">MQTT Settings</a>
         <a href="#web-settings" class="text-blue-400 hover:text-blue-300">Web Server</a>
     </div>
 
@@ -191,144 +190,6 @@
             </div>
         </div>
 
-        <!-- MQTT Settings -->
-        <div id="mqtt-settings" class="bg-gray-800 border border-gray-700 rounded-lg p-6 scroll-mt-24">
-            <h3 class="text-xl font-bold text-gray-100 mb-4">MQTT Settings</h3>
-
-            <div class="space-y-4">
-                <div class="flex items-center">
-                    <input type="checkbox" id="mqtt_enabled" name="mqtt_enabled" {% if config.mqtt_enabled %}checked{% endif %}
-                           class="w-5 h-5 bg-gray-900 border border-gray-600 rounded">
-                    <label class="ml-3 text-gray-300" for="mqtt_enabled">
-                        Enable MQTT
-                        <span class="ml-2 text-gray-400 cursor-help" title="Publish results to MQTT server">ⓘ</span>
-                    </label>
-                </div>
-
-                <div>
-                    <label class="block text-gray-300 mb-2" for="mqtt_host">
-                        MQTT Host *
-                        <span class="ml-2 text-gray-400 cursor-help" title="Broker hostname or IP">ⓘ</span>
-                    </label>
-                    <input type="text" id="mqtt_host" name="mqtt_host" value="{{ config.mqtt_host }}"
-                           placeholder="broker.local"
-                           class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
-                    {% if error_map.mqtt_host %}
-                        <p class="text-sm text-red-300 mt-2">{{ error_map.mqtt_host }}</p>
-                    {% endif %}
-                </div>
-
-                <div>
-                    <label class="block text-gray-300 mb-2" for="mqtt_port">
-                        MQTT Port *
-                        <span class="ml-2 text-gray-400 cursor-help" title="Broker port">ⓘ</span>
-                    </label>
-                    <input type="number" id="mqtt_port" name="mqtt_port" value="{{ config.mqtt_port }}" step="1"
-                           placeholder="1883"
-                           class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
-                    {% if error_map.mqtt_port %}
-                        <p class="text-sm text-red-300 mt-2">{{ error_map.mqtt_port }}</p>
-                    {% endif %}
-                </div>
-
-                <div>
-                    <label class="block text-gray-300 mb-2" for="mqtt_username">
-                        MQTT Username
-                        <span class="ml-2 text-gray-400 cursor-help" title="Optional broker username">ⓘ</span>
-                    </label>
-                    <input type="text" id="mqtt_username" name="mqtt_username" value="{{ config.mqtt_username }}"
-                           class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
-                </div>
-
-                <div>
-                    <label class="block text-gray-300 mb-2" for="mqtt_password">
-                        MQTT Password
-                        <span class="ml-2 text-gray-400 cursor-help" title="Optional broker password; leave blank for none">ⓘ</span>
-                    </label>
-                    <div class="flex items-center gap-3">
-                        <input type="password" id="mqtt_password" name="mqtt_password" value="{{ config.mqtt_password }}"
-                               class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
-                        <label class="flex items-center text-gray-300 text-sm whitespace-nowrap">
-                            <input id="mqtt-password-toggle" type="checkbox" class="w-4 h-4 bg-gray-900 border border-gray-600 rounded mr-2">
-                            Show
-                        </label>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-gray-300 mb-2" for="mqtt_topic">
-                        MQTT Topic *
-                        <span class="ml-2 text-gray-400 cursor-help" title="Base topic for results">ⓘ</span>
-                    </label>
-                    <input type="text" id="mqtt_topic" name="mqtt_topic" value="{{ config.mqtt_topic }}"
-                           placeholder="octobot/results"
-                           class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
-                    {% if error_map.mqtt_topic %}
-                        <p class="text-sm text-red-300 mt-2">{{ error_map.mqtt_topic }}</p>
-                    {% endif %}
-                </div>
-
-                <div class="flex items-center">
-                    <input type="checkbox" id="mqtt_use_tls" name="mqtt_use_tls" {% if config.mqtt_use_tls %}checked{% endif %}
-                           class="w-5 h-5 bg-gray-900 border border-gray-600 rounded">
-                    <label class="ml-3 text-gray-300" for="mqtt_use_tls">
-                        Use TLS
-                        <span class="ml-2 text-gray-400 cursor-help" title="Enable TLS (use port 8883) and certificate options">ⓘ</span>
-                    </label>
-                </div>
-
-                <div class="flex items-center">
-                    <input type="checkbox" id="mqtt_tls_insecure" name="mqtt_tls_insecure" {% if config.mqtt_tls_insecure %}checked{% endif %}
-                           class="w-5 h-5 bg-gray-900 border border-gray-600 rounded">
-                    <label class="ml-3 text-gray-300" for="mqtt_tls_insecure">
-                        Allow insecure TLS
-                        <span class="ml-2 text-gray-400 cursor-help" title="Allow self-signed certificates (not recommended)">ⓘ</span>
-                    </label>
-                </div>
-
-                <div>
-                    <label class="block text-gray-300 mb-2" for="mqtt_ca_cert">
-                        CA Certificate Path
-                        <span class="ml-2 text-gray-400 cursor-help" title="Path to CA certificate file (optional)">ⓘ</span>
-                    </label>
-                    <input type="text" id="mqtt_ca_cert" name="mqtt_ca_cert" value="{{ config.mqtt_ca_cert }}"
-                           placeholder="/ssl/ca.crt"
-                           class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
-                </div>
-
-                <div>
-                    <label class="block text-gray-300 mb-2" for="mqtt_client_cert">
-                        Client Certificate Path
-                        <span class="ml-2 text-gray-400 cursor-help" title="Path to client certificate file (optional)">ⓘ</span>
-                    </label>
-                    <input type="text" id="mqtt_client_cert" name="mqtt_client_cert" value="{{ config.mqtt_client_cert }}"
-                           placeholder="/ssl/client.crt"
-                           class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
-                </div>
-
-                <div>
-                    <label class="block text-gray-300 mb-2" for="mqtt_client_key">
-                        Client Key Path
-                        <span class="ml-2 text-gray-400 cursor-help" title="Path to client key file (optional)">ⓘ</span>
-                    </label>
-                    <input type="text" id="mqtt_client_key" name="mqtt_client_key" value="{{ config.mqtt_client_key }}"
-                           placeholder="/ssl/client.key"
-                           class="w-full bg-gray-900 border border-gray-600 text-gray-100 rounded px-4 py-2 focus:outline-none focus:border-blue-500">
-                </div>
-
-                <div class="flex items-center gap-3">
-                    <button type="button" id="mqtt-test-button"
-                            class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
-                        Test
-                    </button>
-                    <span id="mqtt-test-status" class="text-sm text-gray-300"></span>
-                </div>
-            </div>
-            <div class="mt-4 text-sm">
-                <a href="#top" class="text-blue-400 hover:text-blue-300">Back to top</a>
-            </div>
-        </div>
-
         <!-- Web Server Settings -->
         <div id="web-settings" class="bg-gray-800 border border-gray-700 rounded-lg p-6 scroll-mt-24">
             <h3 class="text-xl font-bold text-gray-100 mb-4">Web Server</h3>
@@ -383,21 +244,6 @@
 <script>
     const webPasswordInput = document.getElementById('web_password');
     const webPasswordToggle = document.getElementById('web-password-toggle');
-    const mqttPasswordInput = document.getElementById('mqtt_password');
-    const mqttPasswordToggle = document.getElementById('mqtt-password-toggle');
-    const mqttTestButton = document.getElementById('mqtt-test-button');
-    const mqttTestStatus = document.getElementById('mqtt-test-status');
-    const mqttHostInput = document.getElementById('mqtt_host');
-    const mqttPortInput = document.getElementById('mqtt_port');
-    const mqttUsernameInput = document.getElementById('mqtt_username');
-    const mqttPasswordField = document.getElementById('mqtt_password');
-    const mqttEnabled = document.getElementById('mqtt_enabled');
-    const mqttTopicInput = document.getElementById('mqtt_topic');
-    const mqttUseTls = document.getElementById('mqtt_use_tls');
-    const mqttTlsInsecure = document.getElementById('mqtt_tls_insecure');
-    const mqttCaCert = document.getElementById('mqtt_ca_cert');
-    const mqttClientCert = document.getElementById('mqtt_client_cert');
-    const mqttClientKey = document.getElementById('mqtt_client_key');
     const notificationUrls = document.getElementById('notification_urls');
     const batchNotifications = document.getElementById('batch_notifications');
     const onlyResultsNotifications = document.getElementById('only_results_notifications');
@@ -406,39 +252,6 @@
         webPasswordToggle.addEventListener('change', function() {
             webPasswordInput.type = webPasswordToggle.checked ? 'text' : 'password';
         });
-    }
-    if (mqttPasswordInput && mqttPasswordToggle) {
-        mqttPasswordToggle.addEventListener('change', function() {
-            mqttPasswordInput.type = mqttPasswordToggle.checked ? 'text' : 'password';
-        });
-    }
-    function syncMqttOptions() {
-        if (!mqttEnabled) {
-            return;
-        }
-        const enabled = mqttEnabled.checked;
-        const fields = [
-            mqttHostInput,
-            mqttPortInput,
-            mqttUsernameInput,
-            mqttPasswordField,
-            mqttTopicInput,
-            mqttUseTls,
-            mqttTlsInsecure,
-            mqttCaCert,
-            mqttClientCert,
-            mqttClientKey,
-            mqttPasswordToggle,
-            mqttTestButton
-        ];
-        fields.forEach((field) => {
-            if (field) {
-                field.disabled = !enabled;
-            }
-        });
-        if (!enabled && mqttTestStatus) {
-            mqttTestStatus.textContent = '';
-        }
     }
     function syncNotificationOptions() {
         if (!notificationUrls || !batchNotifications || !onlyResultsNotifications) {
@@ -456,56 +269,6 @@
     if (notificationUrls) {
         notificationUrls.addEventListener('input', syncNotificationOptions);
         syncNotificationOptions();
-    }
-    if (mqttEnabled) {
-        mqttEnabled.addEventListener('change', syncMqttOptions);
-        syncMqttOptions();
-    }
-    if (mqttTestButton && mqttTestStatus && mqttHostInput && mqttPortInput) {
-        mqttTestButton.addEventListener('click', async function() {
-            mqttTestStatus.textContent = 'Testing...';
-            mqttTestStatus.className = 'text-sm text-gray-300';
-            try {
-                const response = await fetch('mqtt/test', {
-                    method: 'POST',
-                    credentials: 'same-origin',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        mqtt_host: mqttHostInput.value,
-                        mqtt_port: mqttPortInput.value,
-                        mqtt_username: mqttUsernameInput ? mqttUsernameInput.value : '',
-                        mqtt_password: mqttPasswordField ? mqttPasswordField.value : '',
-                        mqtt_use_tls: mqttUseTls && mqttUseTls.checked,
-                        mqtt_tls_insecure: mqttTlsInsecure && mqttTlsInsecure.checked,
-                        mqtt_ca_cert: mqttCaCert ? mqttCaCert.value : '',
-                        mqtt_client_cert: mqttClientCert ? mqttClientCert.value : '',
-                        mqtt_client_key: mqttClientKey ? mqttClientKey.value : ''
-                    })
-                });
-                let data = { ok: response.ok, message: '' };
-                const contentType = response.headers.get('content-type') || '';
-                if (contentType.includes('application/json')) {
-                    try {
-                        data = await response.json();
-                    } catch (parseError) {
-                        data = { ok: false, message: `Unexpected response (${response.status})` };
-                    }
-                } else {
-                    const text = await response.text();
-                    data = { ok: response.ok, message: text || `Unexpected response (${response.status})` };
-                }
-                if ((response.status === 401 || response.status === 403) && !response.ok) {
-                    data = { ok: false, message: 'Authentication required. Reload and sign in.' };
-                } else if (!response.ok && data.ok) {
-                    data.ok = false;
-                }
-                mqttTestStatus.textContent = data.message || 'Unknown response';
-                mqttTestStatus.className = data.ok ? 'text-sm text-green-300' : 'text-sm text-red-300';
-            } catch (error) {
-                mqttTestStatus.textContent = 'Test failed to run';
-                mqttTestStatus.className = 'text-sm text-red-300';
-            }
-        });
     }
     const container = document.getElementById('top');
     const errorField = container ? container.dataset.errorField : '';

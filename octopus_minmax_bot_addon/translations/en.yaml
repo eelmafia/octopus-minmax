@@ -39,39 +39,6 @@ configuration:
   BATCH_NOTIFICATIONS:
     name: Batch Notifications
     description: An optional flag to send messages in one batch rather than individually
-  MQTT_ENABLED:
-    name: MQTT Enabled
-    description: Enable MQTT publishing (optional).
-  MQTT_HOST:
-    name: MQTT Host
-    description: MQTT broker hostname or IP address.
-  MQTT_PORT:
-    name: MQTT Port
-    description: MQTT broker port (default 1883).
-  MQTT_USERNAME:
-    name: MQTT Username
-    description: MQTT broker username (optional).
-  MQTT_PASSWORD:
-    name: MQTT Password
-    description: MQTT broker password (optional).
-  MQTT_TOPIC:
-    name: MQTT Topic
-    description: Base topic for MQTT results.
-  MQTT_USE_TLS:
-    name: MQTT Use TLS
-    description: Enable TLS for MQTT (optional).
-  MQTT_TLS_INSECURE:
-    name: MQTT TLS Insecure
-    description: Allow insecure TLS connections (optional).
-  MQTT_CA_CERT:
-    name: MQTT CA Cert
-    description: Path to CA certificate for MQTT TLS (optional).
-  MQTT_CLIENT_CERT:
-    name: MQTT Client Cert
-    description: Path to client certificate for MQTT TLS (optional).
-  MQTT_CLIENT_KEY:
-    name: MQTT Client Key
-    description: Path to client key for MQTT TLS (optional).
   WEB_USERNAME:
     name: Web Username
     description: Username for web UI authentication.

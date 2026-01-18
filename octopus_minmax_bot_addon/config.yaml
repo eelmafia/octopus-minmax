@@ -45,17 +45,6 @@ options:
   TARIFFS: "agile,go,flexible"
   TZ: "Europe/London"
   BATCH_NOTIFICATIONS: false
-  MQTT_ENABLED: false
-  MQTT_HOST: "core-mosquitto"
-  MQTT_PORT: 1883
-  MQTT_USERNAME: ""
-  MQTT_PASSWORD: ""
-  MQTT_TOPIC: ""
-  MQTT_USE_TLS: false
-  MQTT_TLS_INSECURE: false
-  MQTT_CA_CERT: ""
-  MQTT_CLIENT_CERT: ""
-  MQTT_CLIENT_KEY: ""
   WEB_USERNAME: "admin"
   WEB_PASSWORD: "admin"
   WEB_PORT: 5050
@@ -73,17 +62,6 @@ schema:
   TARIFFS: str
   TZ: str
   BATCH_NOTIFICATIONS: bool
-  MQTT_ENABLED: bool
-  MQTT_HOST: str
-  MQTT_PORT: int
-  MQTT_USERNAME: str
-  MQTT_PASSWORD: password
-  MQTT_TOPIC: str
-  MQTT_USE_TLS: bool
-  MQTT_TLS_INSECURE: bool
-  MQTT_CA_CERT: str
-  MQTT_CLIENT_CERT: str
-  MQTT_CLIENT_KEY: str
   WEB_USERNAME: str
   WEB_PASSWORD: password
   WEB_PORT: int

@@ -24,17 +24,6 @@ _ENV_MIGRATION_KEYS = (
     "NOTIFICATION_URLS",
     "BATCH_NOTIFICATIONS",
     "ONLY_RESULTS_NOTIFICATIONS",
-    "MQTT_ENABLED",
-    "MQTT_HOST",
-    "MQTT_PORT",
-    "MQTT_USERNAME",
-    "MQTT_PASSWORD",
-    "MQTT_TOPIC",
-    "MQTT_USE_TLS",
-    "MQTT_TLS_INSECURE",
-    "MQTT_CA_CERT",
-    "MQTT_CLIENT_CERT",
-    "MQTT_CLIENT_KEY",
     "WEB_USERNAME",
     "WEB_PASSWORD",
     "NO_WEB_SERVER",
@@ -91,31 +80,6 @@ def _apply_persisted_values(values):
         config.BATCH_NOTIFICATIONS = _coerce_bool(values['BATCH_NOTIFICATIONS'], config.BATCH_NOTIFICATIONS)
     if 'ONLY_RESULTS_NOTIFICATIONS' in values and not _env_overrides('ONLY_RESULTS_NOTIFICATIONS'):
         config.ONLY_RESULTS_NOTIFICATIONS = _coerce_bool(values['ONLY_RESULTS_NOTIFICATIONS'], config.ONLY_RESULTS_NOTIFICATIONS)
-    if 'MQTT_ENABLED' in values and not _env_overrides('MQTT_ENABLED'):
-        config.MQTT_ENABLED = _coerce_bool(values['MQTT_ENABLED'], config.MQTT_ENABLED)
-    if 'MQTT_HOST' in values and not _env_overrides('MQTT_HOST'):
-        config.MQTT_HOST = values['MQTT_HOST']
-    if 'MQTT_PORT' in values and not _env_overrides('MQTT_PORT'):
-        try:
-            config.MQTT_PORT = int(values['MQTT_PORT'])
-        except (TypeError, ValueError):
-            pass
-    if 'MQTT_USERNAME' in values and not _env_overrides('MQTT_USERNAME'):
-        config.MQTT_USERNAME = values['MQTT_USERNAME']
-    if 'MQTT_PASSWORD' in values and not _env_overrides('MQTT_PASSWORD'):
-        config.MQTT_PASSWORD = values['MQTT_PASSWORD']
-    if 'MQTT_TOPIC' in values and not _env_overrides('MQTT_TOPIC'):
-        config.MQTT_TOPIC = values['MQTT_TOPIC']
-    if 'MQTT_USE_TLS' in values and not _env_overrides('MQTT_USE_TLS'):
-        config.MQTT_USE_TLS = _coerce_bool(values['MQTT_USE_TLS'], config.MQTT_USE_TLS)
-    if 'MQTT_TLS_INSECURE' in values and not _env_overrides('MQTT_TLS_INSECURE'):
-        config.MQTT_TLS_INSECURE = _coerce_bool(values['MQTT_TLS_INSECURE'], config.MQTT_TLS_INSECURE)
-    if 'MQTT_CA_CERT' in values and not _env_overrides('MQTT_CA_CERT'):
-        config.MQTT_CA_CERT = values['MQTT_CA_CERT']
-    if 'MQTT_CLIENT_CERT' in values and not _env_overrides('MQTT_CLIENT_CERT'):
-        config.MQTT_CLIENT_CERT = values['MQTT_CLIENT_CERT']
-    if 'MQTT_CLIENT_KEY' in values and not _env_overrides('MQTT_CLIENT_KEY'):
-        config.MQTT_CLIENT_KEY = values['MQTT_CLIENT_KEY']
     if 'WEB_USERNAME' in values and not _env_overrides('WEB_USERNAME'):
         config.WEB_USERNAME = values['WEB_USERNAME']
     if 'WEB_PASSWORD' in values and not _env_overrides('WEB_PASSWORD'):
@@ -202,17 +166,6 @@ def get_config():
             'notification_urls': config.NOTIFICATION_URLS,
             'batch_notifications': config.BATCH_NOTIFICATIONS,
             'only_results_notifications': config.ONLY_RESULTS_NOTIFICATIONS,
-            'mqtt_enabled': config.MQTT_ENABLED,
-            'mqtt_host': config.MQTT_HOST,
-            'mqtt_port': config.MQTT_PORT,
-            'mqtt_username': config.MQTT_USERNAME,
-            'mqtt_password': config.MQTT_PASSWORD,
-            'mqtt_topic': config.MQTT_TOPIC,
-            'mqtt_use_tls': config.MQTT_USE_TLS,
-            'mqtt_tls_insecure': config.MQTT_TLS_INSECURE,
-            'mqtt_ca_cert': config.MQTT_CA_CERT,
-            'mqtt_client_cert': config.MQTT_CLIENT_CERT,
-            'mqtt_client_key': config.MQTT_CLIENT_KEY,
             'web_username': config.WEB_USERNAME,
             'web_password': "",
         }
@@ -255,34 +208,6 @@ def update_config(new_values):
             config.ONLY_RESULTS_NOTIFICATIONS = str(new_values['only_results_notifications']).lower() in ['true', '1', 'yes', 'on']
         else:
             config.ONLY_RESULTS_NOTIFICATIONS = False
-        if 'mqtt_enabled' in new_values:
-            config.MQTT_ENABLED = str(new_values['mqtt_enabled']).lower() in ['true', '1', 'yes', 'on']
-        else:
-            config.MQTT_ENABLED = False
-        if 'mqtt_host' in new_values:
-            config.MQTT_HOST = new_values['mqtt_host']
-        if 'mqtt_port' in new_values and new_values['mqtt_port']:
-            config.MQTT_PORT = int(new_values['mqtt_port'])
-        if 'mqtt_username' in new_values:
-            config.MQTT_USERNAME = new_values['mqtt_username']
-        if 'mqtt_password' in new_values:
-            config.MQTT_PASSWORD = new_values['mqtt_password']
-        if 'mqtt_topic' in new_values:
-            config.MQTT_TOPIC = new_values['mqtt_topic']
-        if 'mqtt_use_tls' in new_values:
-            config.MQTT_USE_TLS = str(new_values['mqtt_use_tls']).lower() in ['true', '1', 'yes', 'on']
-        else:
-            config.MQTT_USE_TLS = False
-        if 'mqtt_tls_insecure' in new_values:
-            config.MQTT_TLS_INSECURE = str(new_values['mqtt_tls_insecure']).lower() in ['true', '1', 'yes', 'on']
-        else:
-            config.MQTT_TLS_INSECURE = False
-        if 'mqtt_ca_cert' in new_values:
-            config.MQTT_CA_CERT = new_values['mqtt_ca_cert']
-        if 'mqtt_client_cert' in new_values:
-            config.MQTT_CLIENT_CERT = new_values['mqtt_client_cert']
-        if 'mqtt_client_key' in new_values:
-            config.MQTT_CLIENT_KEY = new_values['mqtt_client_key']
         if 'web_username' in new_values and new_values['web_username']:
             config.WEB_USERNAME = new_values['web_username']
         if 'web_password' in new_values and new_values['web_password']:
@@ -306,17 +231,6 @@ def _persist_config(source=None):
         'NOTIFICATION_URLS': config.NOTIFICATION_URLS,
         'BATCH_NOTIFICATIONS': config.BATCH_NOTIFICATIONS,
         'ONLY_RESULTS_NOTIFICATIONS': config.ONLY_RESULTS_NOTIFICATIONS,
-        'MQTT_ENABLED': config.MQTT_ENABLED,
-        'MQTT_HOST': config.MQTT_HOST,
-        'MQTT_PORT': config.MQTT_PORT,
-        'MQTT_USERNAME': config.MQTT_USERNAME,
-        'MQTT_PASSWORD': config.MQTT_PASSWORD,
-        'MQTT_TOPIC': config.MQTT_TOPIC,
-        'MQTT_USE_TLS': config.MQTT_USE_TLS,
-        'MQTT_TLS_INSECURE': config.MQTT_TLS_INSECURE,
-        'MQTT_CA_CERT': config.MQTT_CA_CERT,
-        'MQTT_CLIENT_CERT': config.MQTT_CLIENT_CERT,
-        'MQTT_CLIENT_KEY': config.MQTT_CLIENT_KEY,
         'WEB_USERNAME': config.WEB_USERNAME,
         'WEB_PASSWORD': config.WEB_PASSWORD,
         'NO_WEB_SERVER': config.NO_WEB_SERVER,
@@ -384,22 +298,6 @@ def validate_config(config_dict, require_web_auth=True):
     if require_web_auth:
         if not config_dict.get('web_username'):
             errors.append("Web username is required")
-
-    mqtt_enabled = str(config_dict.get('mqtt_enabled', '')).lower() in ['true', '1', 'yes', 'on']
-    if mqtt_enabled:
-        if not config_dict.get('mqtt_host'):
-            errors.append("MQTT host is required when MQTT is enabled")
-        if not config_dict.get('mqtt_port'):
-            errors.append("MQTT port is required when MQTT is enabled")
-        else:
-            try:
-                val = int(config_dict['mqtt_port'])
-                if val <= 0:
-                    errors.append("MQTT port must be a positive number")
-            except ValueError:
-                errors.append("MQTT port must be a number")
-        if not config_dict.get('mqtt_topic'):
-            errors.append("MQTT topic is required when MQTT is enabled")
 
     # Validate execution_time format (HH:MM)
     if 'execution_time' in config_dict:
