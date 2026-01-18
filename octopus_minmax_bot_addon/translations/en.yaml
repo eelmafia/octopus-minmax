@@ -1,26 +1,35 @@
 ---
 configuration:
-  ONE_OFF:
-    name: One Off Execution
-    description: Run the comparison ONCE then quit.
-  NOTIFICATION_URLS:
-    name: Notification URLs
-    description: URLs to send notifications to. Using Apprise.
-  EXECUTION_TIME:
-    name: Execution Time
-    description: When not One Off. This is the time to execute comparison.
-  SWITCH_THRESHOLD:
-    name: Switch Threshold
-    description: A value (in pence) which the saving must be before the switch occurs. Default is 2 (2p).
+  OCTOBOT_CONFIG_PATH:
+    name: Config Path
+    description: Path to config.json (default /config/config.json).
   API_KEY:
     name: API Key
     description: Octopus API Key
   ACC_NUMBER:
     name: Account Number
     description: Enter Octopus Account Number
+  BASE_URL:
+    name: Base URL
+    description: Octopus API base URL (defaults to https://api.octopus.energy/v1).
+  EXECUTION_TIME:
+    name: Execution Time
+    description: When not One Off. This is the time to execute comparison.
+  SWITCH_THRESHOLD:
+    name: Switch Threshold
+    description: A value (in pence) which the saving must be before the switch occurs. Default is 2.
+  ONE_OFF:
+    name: One Off Execution
+    description: Run the comparison ONCE then quit.
   DRY_RUN:
     name: Dry Run
     description: Compare tariffs but don't initiate any switches.
+  NOTIFICATION_URLS:
+    name: Notification URLs
+    description: URLs to send notifications to. Using Apprise.
+  ONLY_RESULTS_NOTIFICATIONS:
+    name: Only Results Notifications
+    description: Suppress all notifications except the final results summary.
   TARIFFS:
     name: Tariffs
     description: Tariffs you want to compare with. See README.md for options.
@@ -30,3 +39,48 @@ configuration:
   BATCH_NOTIFICATIONS:
     name: Batch Notifications
     description: An optional flag to send messages in one batch rather than individually
+  MQTT_ENABLED:
+    name: MQTT Enabled
+    description: Enable MQTT publishing (optional).
+  MQTT_HOST:
+    name: MQTT Host
+    description: MQTT broker hostname or IP address.
+  MQTT_PORT:
+    name: MQTT Port
+    description: MQTT broker port (default 1883).
+  MQTT_USERNAME:
+    name: MQTT Username
+    description: MQTT broker username (optional).
+  MQTT_PASSWORD:
+    name: MQTT Password
+    description: MQTT broker password (optional).
+  MQTT_TOPIC:
+    name: MQTT Topic
+    description: Base topic for MQTT results.
+  MQTT_USE_TLS:
+    name: MQTT Use TLS
+    description: Enable TLS for MQTT (optional).
+  MQTT_TLS_INSECURE:
+    name: MQTT TLS Insecure
+    description: Allow insecure TLS connections (optional).
+  MQTT_CA_CERT:
+    name: MQTT CA Cert
+    description: Path to CA certificate for MQTT TLS (optional).
+  MQTT_CLIENT_CERT:
+    name: MQTT Client Cert
+    description: Path to client certificate for MQTT TLS (optional).
+  MQTT_CLIENT_KEY:
+    name: MQTT Client Key
+    description: Path to client key for MQTT TLS (optional).
+  WEB_USERNAME:
+    name: Web Username
+    description: Username for web UI authentication.
+  WEB_PASSWORD:
+    name: Web Password
+    description: Password for web UI authentication.
+  WEB_PORT:
+    name: Web Port
+    description: Web UI port (default 5050).
+  NO_WEB_SERVER:
+    name: Disable Web Server
+    description: Disable the web server when true.
