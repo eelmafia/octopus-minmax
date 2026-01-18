@@ -59,7 +59,6 @@ options:
   WEB_USERNAME: "admin"
   WEB_PASSWORD: "admin"
   WEB_PORT: 5050
-  NO_WEB_SERVER: false
 schema:
   OCTOBOT_CONFIG_PATH: str
   API_KEY: str
@@ -88,4 +87,3 @@ schema:
   WEB_USERNAME: str
   WEB_PASSWORD: password
   WEB_PORT: int
-  NO_WEB_SERVER: bool

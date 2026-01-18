@@ -81,6 +81,3 @@ configuration:
   WEB_PORT:
     name: Web Port
     description: Web UI port (default 5050).
-  NO_WEB_SERVER:
-    name: Disable Web Server
-    description: Disable the web server when true.
