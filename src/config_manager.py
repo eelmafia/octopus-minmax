@@ -4,47 +4,15 @@ import json
 import os
 import logging
 import config
-import secrets
 from werkzeug.security import generate_password_hash
 
 _config_lock = threading.Lock()
 _CONFIG_PATH = os.getenv("OCTOBOT_CONFIG_PATH", "/config/config.json")
 _LASTRUN_PATH = os.path.join(os.path.dirname(_CONFIG_PATH), "lastrun.json")
 logger = logging.getLogger('octobot.config_manager')
-_ENV_CONFIG_KEYS = [
-    "API_KEY",
-    "ACC_NUMBER",
-    "BASE_URL",
-    "EXECUTION_TIME",
-    "SWITCH_THRESHOLD",
-    "TARIFFS",
-    "ONE_OFF",
-    "DRY_RUN",
-    "NOTIFICATION_URLS",
-    "BATCH_NOTIFICATIONS",
-    "ONLY_RESULTS_NOTIFICATIONS",
-    "MQTT_ENABLED",
-    "MQTT_HOST",
-    "MQTT_PORT",
-    "MQTT_USERNAME",
-    "MQTT_PASSWORD",
-    "MQTT_TOPIC",
-    "MQTT_USE_TLS",
-    "MQTT_TLS_INSECURE",
-    "MQTT_CA_CERT",
-    "MQTT_CLIENT_CERT",
-    "MQTT_CLIENT_KEY",
-    "WEB_USERNAME",
-    "WEB_PASSWORD",
-    "WEB_PORT",
-    "NO_WEB_SERVER",
-]
 
 def _env_overrides(key):
     return os.getenv(key) not in (None, "")
-
-def _has_env_overrides():
-    return any(_env_overrides(key) for key in _ENV_CONFIG_KEYS)
 
 def _coerce_bool(value, default=False):
     if isinstance(value, bool):
@@ -130,12 +98,6 @@ def load_persisted_config():
                 return
             except Exception as exc:
                 logger.warning("Failed to load persisted config from %s: %s", path, exc)
-        if _has_env_overrides():
-            temp_password = secrets.token_urlsafe(12)
-            config.WEB_USERNAME = "admin"
-            config.WEB_PASSWORD = generate_password_hash(temp_password)
-            _persist_config()
-            logger.info("Temporary admin password: %s", temp_password)
 
 def warn_if_missing_config():
     if not os.path.exists(_CONFIG_PATH):
