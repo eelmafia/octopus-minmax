@@ -33,13 +33,12 @@ To install this third-party add-on:
 https://github.com/eelmafia/octopus-minmax
 4. Refresh the page if needed. The add-on will appear under **Octopus MinMax Bot**.
 
-
 ### Running Manually
 1. Create a venv (`python -m venv /path/to/venv`)
 2. Activate the venv (`source /path/to/venv/bin/activate`)
 3. Install the Python requirements (`pip install -r requirements.txt`)
 4. Optional: Configure the environment variables
-5. Run `python src/main.py` from the octopus-minmax directory. If you didn't set environment variables, you can pass them to `main.py` as such;
+5. Run `python src/main.py` from the octopus-minmax directory. If you didn't set environment variables, you can pass them to `main.py` as per the minimal example below;
 
 ```
 OCTOBOT_CONFIG_PATH=./config/config.json \
@@ -56,6 +55,8 @@ BATCH_NOTIFICATIONS=true \
 ONLY_RESULTS_NOTIFICATIONS=false \
 python3 src/main.py
 ```
+
+Note: to disable the built in web server, pass NO_WEB_SERVER=true as an environment variable.
 
 Full list of environment variables;
 
@@ -87,11 +88,12 @@ Full list of environment variables;
 | `WEB_USERNAME` | Web UI username (non-ingress) | `admin` |
 | `WEB_PASSWORD` | Web UI password (non-ingress) | `yourpassword` |
 | `WEB_PORT` | Web UI port | `5050` |
+| `NO_WEB_SERVER` | Disable the web server entirely | `true` |
 
 I recommend scheduling it to run it at 11 PM in order to leave yourself an hour as a safety margin in case Octopus takes a while to generate your new agreement.
 
 ### Running using Docker
-Docker run command:
+Minimal Docker run command:
 
 ```
 docker run -d \
@@ -99,11 +101,25 @@ docker run -d \
   -p 5050:5050 \
   -v ./logs:/app/logs \
   -v ./config:/config \
+  -e OCTOBOT_CONFIG_PATH=./config/config.json \
+  -e WEB_PORT=5050 \
+  -e DRY_RUN=true \
+  -e ONE_OFF=true \
+  -e API_KEY=<YourAPIKey> \
+  -e ACC_NUMBER=<OctopusAccountNumber> \
+  -e SWITCH_THRESHOLD=200 \
+  -e TARIFFS=go,agile \
+  -e BASE_URL=https://api.octopus.energy/v1 \
+  -e NOTIFICATION_URLS=<YourNotificationURLs> \
+  -e BATCH_NOTIFICATIONS=true \
+  -e ONLY_RESULTS_NOTIFICATIONS=false \
   -e TZ=Europe/London \
   --restart unless-stopped \
   eelmafia/octopus-minmax-bot
 ```
 or use the ```docker-compose.yaml``` file.
+
+Note: to disable the built in web server, pass NO_WEB_SERVER=true in the docker run command.
 
 **Note:**
 
