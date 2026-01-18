@@ -14,22 +14,33 @@ class NotificationService:
         self.notification_urls = notification_urls
         self.batch_notifications: List[str] = []
         self.batch_enabled = batch_enabled
-        self._apprise: Optional[Apprise] = None
 
     def _sync_config(self) -> None:
         latest_urls = config.NOTIFICATION_URLS
         if latest_urls != self.notification_urls:
             self.notification_urls = latest_urls
-            self._apprise = None
         self.batch_enabled = config.BATCH_NOTIFICATIONS
 
-    def _get_apprise(self) -> Optional[Apprise]:
-        if self._apprise is None:
-            self._apprise = Apprise()
-            for url in self.notification_urls.split(','):
-                self._apprise.add(url.strip())
+    def _get_urls(self) -> List[str]:
+        return [url.strip() for url in self.notification_urls.split(",") if url.strip()]
 
-        return self._apprise
+    def _notify_per_url(self, body: str, title: str) -> bool:
+        urls = self._get_urls()
+        if not urls:
+            logger.warning("No notification services configured. Check config.NOTIFICATION_URLS.")
+            return False
+        overall_success = True
+        for url in urls:
+            apprise = Apprise()
+            apprise.add(url)
+            success = apprise.notify(body=body, title=title)
+            provider = url.split(":", 1)[0]
+            if success:
+                logger.info("Sent notification via %s: %s", provider, title or body)
+            else:
+                logger.error("Failed to send notification via %s: %s", provider, title)
+            overall_success = overall_success and success
+        return overall_success
 
     def send_notification(self, message:str, title: str = "", is_error: bool = False, batchable: bool = True, is_results: bool = False) -> bool:
         """Sends a notification using Apprise.
@@ -43,10 +54,6 @@ class NotificationService:
         """
         self._sync_config()
         if config.ONLY_RESULTS_NOTIFICATIONS and not is_results and not is_error:
-            return False
-        apprise = self._get_apprise()
-        if not apprise:
-            logger.warning("No notification services configured. Check config.NOTIFICATION_URLS.")
             return False
 
         if is_error:
@@ -63,11 +70,7 @@ class NotificationService:
             logger.debug(f"Added message to batch. Current batch size: {len(self.batch_notifications)}")
             return True
         else:
-            success = apprise.notify(body=message, title=title)
-            logger.info(f"Successfuly sent notification: {message}")
-            if not success:
-                logger.error(f"Failed to send notification: {title}")
-            return success
+            return self._notify_per_url(message, title)
 
     def send_batch_notification(self) -> bool:
         self._sync_config()
@@ -75,16 +78,11 @@ class NotificationService:
             logger.debug("No notifications in batch to send")
             return True
 
-        apprise = self._get_apprise()
-        if not apprise:
-            logger.warning("Cannot send batch - no notification services configured")
-            return False
-
         now = datetime.now()
         title = now.strftime(f"Octopus MinMax Results - %a %d %b {config.EXECUTION_TIME if not config.ONE_OFF_RUN else now.strftime('%H:%M:%S')}")
         body = "\n".join(self.batch_notifications)
 
-        success = apprise.notify(body=body, title=title)
+        success = self._notify_per_url(body, title)
         if success:
             logger.info(f"Sent batch notification with {len(self.batch_notifications)} messages")
             self.batch_notifications.clear()
