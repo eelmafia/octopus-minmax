@@ -1,27 +1,4 @@
 import os
-import json
-
-_OPTIONS_PATH = "/data/options.json"
-
-
-def _load_options():
-    try:
-        with open(_OPTIONS_PATH, "r", encoding="utf-8") as handle:
-            data = json.load(handle)
-        return data if isinstance(data, dict) else {}
-    except Exception:
-        return {}
-
-def _seed_env_from_options(options):
-    for key, value in options.items():
-        if value is None:
-            continue
-        if isinstance(value, (list, tuple)):
-            value = ",".join(str(item) for item in value)
-        os.environ[key] = str(value)
-
-
-_seed_env_from_options(_load_options())
 
 #  The bot will declare its version in the welcome message.
 # Updated by the release pipeline. Change manually if building from source
