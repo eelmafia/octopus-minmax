@@ -8,6 +8,31 @@
     </div>
 
     {% if has_history %}
+    <div class="bg-gray-800 border border-gray-700 rounded-2xl px-6 py-4 mb-6">
+        <div class="flex items-center gap-2 mb-3 text-gray-200">
+            <svg class="w-5 h-5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="6" width="18" height="12" rx="2"/>
+                <circle cx="12" cy="12" r="2.5"/>
+                <path d="M3 9c2 0 3-1 3-3"/>
+                <path d="M21 15c-2 0-3 1-3 3"/>
+            </svg>
+            <div class="text-sm font-semibold uppercase tracking-wide">Savings Summary</div>
+        </div>
+        <div class="flex flex-wrap gap-6">
+            <div>
+                <div class="text-xs uppercase tracking-wide text-gray-400">Past week</div>
+                <div id="history-summary-week" class="text-2xl font-semibold text-gray-100">£0.00</div>
+            </div>
+            <div>
+                <div class="text-xs uppercase tracking-wide text-gray-400">Past month</div>
+                <div id="history-summary-month" class="text-2xl font-semibold text-gray-100">£0.00</div>
+            </div>
+            <div>
+                <div class="text-xs uppercase tracking-wide text-gray-400">Past year</div>
+                <div id="history-summary-year" class="text-2xl font-semibold text-gray-100">£0.00</div>
+            </div>
+        </div>
+    </div>
     <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 mb-6">
         <div class="flex flex-wrap items-end gap-4 mb-4">
             <div>
@@ -87,6 +112,46 @@
     const chartTypeSelect = document.getElementById('history-chart-type');
     const granularitySelect = document.getElementById('history-granularity');
     const downloadLink = document.getElementById('history-download');
+    const summaryWeek = document.getElementById('history-summary-week');
+    const summaryMonth = document.getElementById('history-summary-month');
+    const summaryYear = document.getElementById('history-summary-year');
+
+    const currencyFormatter = new Intl.NumberFormat('en-GB', {
+        style: 'currency',
+        currency: 'GBP',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+
+    function formatCurrency(value) {
+        return currencyFormatter.format(value);
+    }
+
+    function sumSavingsSince(days) {
+        const now = new Date();
+        const cutoff = new Date(now);
+        cutoff.setDate(cutoff.getDate() - days + 1);
+        let total = 0;
+        original.forEach((entry) => {
+            if (entry.savings == null || !entry.label) {
+                return;
+            }
+            const date = new Date(entry.label);
+            if (Number.isNaN(date.getTime())) {
+                return;
+            }
+            if (date >= cutoff && date <= now) {
+                total += entry.savings;
+            }
+        });
+        return total;
+    }
+
+    function updateSummaryBar() {
+        summaryWeek.textContent = formatCurrency(sumSavingsSince(7));
+        summaryMonth.textContent = formatCurrency(sumSavingsSince(30));
+        summaryYear.textContent = formatCurrency(sumSavingsSince(365));
+    }
 
     function formatBucketLabel(date, granularity) {
         if (granularity === 'monthly') {
@@ -363,6 +428,7 @@
     });
 
     updateChart(original);
+    updateSummaryBar();
     document.getElementById('history-apply').addEventListener('click', applyFilter);
     document.getElementById('history-reset').addEventListener('click', () => {
         startInput.value = '';
