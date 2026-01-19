@@ -1,3 +1,12 @@
+## v1.0.6 - v1.0.6
+## What's Changed
+* Update Addon Configuration to v1.0.5 by @github-actions[bot] in https://github.com/eelmafia/octopus-minmax/pull/148
+* Restore legacy:true to config.yaml (fixes #141) by @DJBenson in https://github.com/eelmafia/octopus-minmax/pull/154
+* Update notification_service.py by @DJBenson in https://github.com/eelmafia/octopus-minmax/pull/156
+
+
+**Full Changelog**: https://github.com/eelmafia/octopus-minmax/compare/v1.0.5...v1.0.6
+
 ## v1.0.5 - v1.0.5
 ## What's Changed
 * Update Addon Configuration to v1.0.4 by @github-actions[bot] in https://github.com/eelmafia/octopus-minmax/pull/146
