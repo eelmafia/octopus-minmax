@@ -37,7 +37,7 @@ schema:
   API_KEY: str
   ACC_NUMBER: str
   EXECUTION_TIME: str
-  SWITCH_THRESHOLD: float
+  SWITCH_THRESHOLD: int
   ONE_OFF: bool
   DRY_RUN: bool
   NOTIFICATION_URLS: str
