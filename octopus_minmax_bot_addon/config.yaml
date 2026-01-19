@@ -13,6 +13,7 @@ version: v1.0.5
 slug: octopus_minmax_bot
 startup: application
 init: false
+legacy: true
 description: A bot to automatically compare and switch smart electricity tariffs on Octopus Energy
 arch:
   - armhf
