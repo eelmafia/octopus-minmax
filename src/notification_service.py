@@ -42,7 +42,7 @@ class NotificationService:
             batchable (bool, optional): Whether the message can be batched.
         """
         self._refresh_from_config()
-	apprise = self._get_apprise()
+	    apprise = self._get_apprise()
         if not apprise:
             logger.warning("No notification services configured. Check config.NOTIFICATION_URLS.")
             return False
@@ -68,7 +68,7 @@ class NotificationService:
             return success
 
     def send_batch_notification(self) -> bool:
-	self._refresh_from_config()
+	    self._refresh_from_config()
         if not self.batch_notifications:
             logger.debug("No notifications in batch to send")
             return True
