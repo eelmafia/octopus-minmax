@@ -43,9 +43,6 @@ class NotificationService:
         """
         self._refresh_from_config()
         apprise = self._get_apprise()
-        if not apprise:
-            logger.warning("No notification services configured. Check config.NOTIFICATION_URLS.")
-            return False
 
         if is_error:
             # Apprise fails if we try to send a discord message over 2k chars (long stacktraces) so chunk it and send it recursively.
@@ -61,6 +58,10 @@ class NotificationService:
             logger.debug(f"Added message to batch. Current batch size: {len(self.batch_notifications)}")
             return True
         else:
+            if not apprise:
+                logger.warning("No notification services configured. Check config.NOTIFICATION_URLS.")
+                logger.info(message)
+                return False
             success = apprise.notify(body=message, title=title)
             logger.info(f"Successfuly sent notification: {message}")
             if not success:
@@ -74,14 +75,15 @@ class NotificationService:
             return True
 
         apprise = self._get_apprise()
-        if not apprise:
-            logger.warning("Cannot send batch - no notification services configured")
-            return False
 
         now = datetime.now()
         title = now.strftime(f"Octopus MinMax Results - %a %d %b {config.EXECUTION_TIME if not config.ONE_OFF_RUN else now.strftime('%H:%M:%S')}")
         body = "\n".join(self.batch_notifications)
 
+        if not apprise:
+            logger.warning("Cannot send batch - no notification services configured. Check config.NOTIFICATION_URLS.")
+            logger.info(body)
+            return False
         success = apprise.notify(body=body, title=title)
         if success:
             logger.info(f"Sent batch notification with {len(self.batch_notifications)} messages")
