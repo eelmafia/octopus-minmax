@@ -3,6 +3,7 @@ from functools import wraps
 import config_manager
 import config
 import logging
+import json
 
 logger = logging.getLogger('octobot.web_server')
 
@@ -73,6 +74,55 @@ def logs():
     log_lines = tail_file('logs/octobot.log', None)  # None = read entire file
     log_entries = group_log_entries(log_lines)
     return render_template('logs.html', log_entries=log_entries)
+
+
+@app.route('/history')
+@require_auth
+def history():
+    history_entries = config_manager.load_history()
+    history_entries = [entry for entry in history_entries if isinstance(entry, dict)]
+    has_history = bool(history_entries)
+    history_entries.sort(key=lambda entry: entry.get('datetime') or "")
+
+    labels = [entry.get('datetime') for entry in history_entries if entry.get('datetime')]
+    savings = [
+        (entry.get('savings_pence') / 100)
+        if entry.get('action') == 'switched' and entry.get('savings_pence') is not None
+        else None
+        for entry in history_entries
+        if entry.get('datetime') is not None
+    ]
+    consumption = [
+        entry.get('totalconsumption_kwh')
+        for entry in history_entries
+        if entry.get('datetime') is not None
+    ]
+    consumption_cost = [
+        entry.get('consumptioncost_pence')
+        for entry in history_entries
+        if entry.get('datetime') is not None
+    ]
+    standing_charge = [
+        entry.get('standingcharge_pence')
+        for entry in history_entries
+        if entry.get('datetime') is not None
+    ]
+    total_cost = [
+        entry.get('totalcost_pence')
+        for entry in history_entries
+        if entry.get('datetime') is not None
+    ]
+
+    return render_template(
+        'history.html',
+        has_history=has_history,
+        labels_json=json.dumps(labels),
+        savings_json=json.dumps(savings),
+        consumption_json=json.dumps(consumption),
+        consumption_cost_json=json.dumps(consumption_cost),
+        standing_charge_json=json.dumps(standing_charge),
+        total_cost_json=json.dumps(total_cost),
+    )
 
 
 def tail_file(filepath, n):
