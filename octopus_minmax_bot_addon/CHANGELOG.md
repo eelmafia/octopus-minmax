@@ -1,3 +1,12 @@
+## v1.0.8 - v1.0.8
+## What's Changed
+* Update Addon Configuration to v1.0.7 by @github-actions[bot] in https://github.com/eelmafia/octopus-minmax/pull/159
+* Update SWITCH_THRESHOLD type to int in config.yaml (fixes #160) by @DJBenson in https://github.com/eelmafia/octopus-minmax/pull/161
+* Log notifications regardless regardless if apprise exists by @eelmafia in https://github.com/eelmafia/octopus-minmax/pull/162
+
+
+**Full Changelog**: https://github.com/eelmafia/octopus-minmax/compare/v1.0.7...v1.0.8
+
 ## v1.0.7 - v1.0.7
 ## What's Changed
 * Update Addon Configuration to v1.0.6 by @github-actions[bot] in https://github.com/eelmafia/octopus-minmax/pull/157

@@ -9,7 +9,7 @@ ports:
 ports_description:
   5050/tcp: Web UI (optional external access)
 webui: http://[HOST]:[PORT:5050]/
-version: v1.0.7
+version: v1.0.8
 slug: octopus_minmax_bot
 startup: application
 init: false
