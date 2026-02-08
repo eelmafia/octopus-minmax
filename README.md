@@ -52,7 +52,7 @@ Docker run command:
 ```
 docker run -d \
   --name MinMaxOctopusBot \
-  -p 5001:5001 \
+  -p 5050:5050 \
   -v ./logs:/app/logs \
   -e ACC_NUMBER="<your_account_number>" \
   -e API_KEY="<your_api_key>" \
