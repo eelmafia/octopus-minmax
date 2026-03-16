@@ -1,8 +1,17 @@
 import threading
 import re
+import os
+import json
+import logging
 import config
 
 _config_lock = threading.Lock()
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+_DEFAULT_CONFIG_PATH = os.path.join(BASE_DIR, "config", "config.json")
+_CONFIG_PATH = os.getenv("OCTOBOT_CONFIG_PATH", _DEFAULT_CONFIG_PATH)
+_LASTRUN_PATH = os.path.join(os.path.dirname(_CONFIG_PATH), "lastrun.json")
+_HISTORY_PATH = os.path.join(os.path.dirname(_CONFIG_PATH), "history.json")
+logger = logging.getLogger('octobot.config_manager')
 
 def get_config():
     """Get current configuration as dictionary (thread-safe)"""
@@ -58,6 +67,40 @@ def update_config(new_values):
 
         if config.ONE_OFF_RUN and not previous_one_off:
             config.ONE_OFF_EXECUTED = False
+
+
+def persist_history_entry(entry):
+    if not isinstance(entry, dict):
+        return
+    with _config_lock:
+        try:
+            dir_path = os.path.dirname(_HISTORY_PATH)
+            if dir_path:
+                os.makedirs(dir_path, exist_ok=True)
+            history = []
+            if os.path.exists(_HISTORY_PATH):
+                with open(_HISTORY_PATH, 'r', encoding='utf-8') as f:
+                    history = json.load(f)
+            if not isinstance(history, list):
+                history = []
+            history.append(entry)
+            with open(_HISTORY_PATH, 'w', encoding='utf-8') as f:
+                json.dump(history, f, indent=2, sort_keys=True)
+        except Exception as exc:
+            logger.warning("Failed to persist history to %s: %s", _HISTORY_PATH, exc)
+
+
+def load_history():
+    with _config_lock:
+        if not os.path.exists(_HISTORY_PATH):
+            return []
+        try:
+            with open(_HISTORY_PATH, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            return data if isinstance(data, list) else []
+        except Exception as exc:
+            logger.warning("Failed to load history from %s: %s", _HISTORY_PATH, exc)
+            return []
 
 
 
