@@ -4,7 +4,7 @@ from typing import Optional, List, Dict
 import logging
 import config
 from account_info import AccountInfo
-from tariff import Tariff
+from tariff import Tariff, match_known_tariff
 from query_service import QueryService
 from queries import (
     get_terms_version_query,
@@ -80,13 +80,14 @@ class AccountManager:
         if not import_agreement:
             raise Exception("ERROR: No IMPORT meter point found in account data")
 
-        tariff_data = import_agreement.get("tariff")
-        if not tariff_data:
-            raise Exception("ERROR: No tariff information found for the IMPORT meter")
-
+        tariff_data = import_agreement.get("tariff") or {}
         tariff_code = tariff_data.get("tariffCode")
         if not tariff_code:
-            raise Exception("ERROR: No tariff code found for the IMPORT tariff")
+            typename = tariff_data.get("__typename")
+            raise Exception(
+                f"ERROR: No tariff information found for the IMPORT meter"
+                + (f" (GraphQL type: {typename})" if typename else "")
+            )
 
         current_standing_charge = tariff_data.get("standingCharge")
         # A standing charge can be 0.0, so check for None explicitly
@@ -113,9 +114,23 @@ class AccountManager:
         if not self.device_id:
             raise Exception("ERROR: No device ID found for the IMPORT meter")
 
-        matching_tariff_obj = next((tariff for tariff in self.available_tariffs if tariff.is_tariff(tariff_code)), None)
+        matching_tariff_obj = match_known_tariff(tariff_code)
         if matching_tariff_obj is None:
-            raise Exception(f"ERROR: Found no supported tariff object for '{tariff_code}' among available tariffs.")
+            display_name = tariff_data.get("displayName") or tariff_data.get("fullName")
+            matching_tariff_obj = Tariff.unrecognised(
+                tariff_code=tariff_code,
+                product_code=tariff_data.get("productCode"),
+                display_name=display_name,
+            )
+            logger.info(
+                f"Current tariff '{tariff_code}' ({tariff_data.get('__typename')}) is not a known "
+                f"switchable product; running comparison-only as '{matching_tariff_obj.display_name}'."
+            )
+        elif matching_tariff_obj not in self.available_tariffs:
+            logger.info(
+                f"Current tariff '{matching_tariff_obj.id}' is not in TARIFFS config; "
+                "still using it as the comparison baseline."
+            )
 
         # Get consumption for today
         consumption_gql_query = consumption_query.format(

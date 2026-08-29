@@ -113,6 +113,41 @@ class BotOrchestrator:
 
         return "\n".join(lines)
 
+    def _format_no_switch_message(self, result: ComparisonResult) -> str:
+        current = result.current_tariff_comparison.tariff
+        current_cost = ""
+        if result.current_tariff_comparison.cost_breakdown:
+            current_cost = f" at £{result.current_tariff_comparison.cost_breakdown.total_cost_pounds:.2f}"
+
+        if not current.can_leave:
+            if result.cheapest_tariff is None:
+                return (
+                    f"Comparison only - current tariff ({current.display_name}) cannot be switched "
+                    f"from automatically."
+                )
+            if result.potential_savings > 0:
+                return (
+                    f"Comparison only - staying on {current.display_name}{current_cost}. "
+                    f"Cheapest switchable tariff today is {result.cheapest_tariff.display_name} "
+                    f"(£{result.potential_savings / 100:.2f} cheaper)."
+                )
+            return (
+                f"Comparison only - current tariff {current.display_name}{current_cost} is cheaper "
+                f"than the switchable alternatives today."
+            )
+
+        if result.cheapest_tariff == current:
+            return f"You are already on the cheapest tariff: {current.display_name}{current_cost}"
+
+        if result.cheapest_tariff is None:
+            return "Not switching today - no cheaper switchable tariff was found."
+
+        return (
+            f"Not switching today - savings of (£{result.potential_savings / 100:.2f}) "
+            f"on the cheapest tariff {result.cheapest_tariff.display_name} are below your "
+            f"threshold of £{config.SWITCH_THRESHOLD / 100:.2f}"
+        )
+
     def _compare_and_switch(self) -> None:
         ns = self.notification_service
         welcome_message = f"{'DRY RUN: ' if config.DRY_RUN else ''}Starting comparison of today's costs..."
@@ -134,15 +169,7 @@ class BotOrchestrator:
             else:
                 self._execute_switch(results.cheapest_tariff, account_info)
         else:
-            if results.cheapest_tariff == results.current_tariff_comparison.tariff:
-                message = (f"You are already on the cheapest tariff: "
-                          f"{results.cheapest_tariff.display_name} at "
-                          f"£{results.current_tariff_comparison.cost_breakdown.total_cost_pounds:.2f}")
-            else:
-                message = (f"Not switching today - savings of (£{results.potential_savings / 100:.2f}) "
-                           f"on the cheapest tariff {results.cheapest_tariff.display_name} are below your "
-                           f"threshold of £{config.SWITCH_THRESHOLD / 100:.2f}")
-            ns.send_notification(message)
+            ns.send_notification(self._format_no_switch_message(results))
 
     def _execute_switch(self, target_tariff: Tariff, account_info: AccountInfo) -> None:
         ns = self.notification_service

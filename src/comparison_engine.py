@@ -51,10 +51,18 @@ class ComparisonResult:
 
     @property
     def should_switch(self) -> bool:
-        logger.debug(f"cheapest_tariff: {self.cheapest_tariff.display_name}, potential_savings: {self.potential_savings}, SWITCH_THRESHOLD: {config.SWITCH_THRESHOLD}")
-        return (self.cheapest_tariff is not None and
-                self.cheapest_tariff != self.current_tariff_comparison.tariff and
-                self.potential_savings > config.SWITCH_THRESHOLD) # buffer
+        current = self.current_tariff_comparison.tariff
+        cheapest_name = self.cheapest_tariff.display_name if self.cheapest_tariff else None
+        logger.debug(
+            f"cheapest_tariff: {cheapest_name}, potential_savings: {self.potential_savings}, "
+            f"SWITCH_THRESHOLD: {config.SWITCH_THRESHOLD}, can_leave: {current.can_leave}"
+        )
+        return (
+            current.can_leave
+            and self.cheapest_tariff is not None
+            and self.cheapest_tariff != current
+            and self.potential_savings > config.SWITCH_THRESHOLD
+        )
 
     @property
     def all_comparisons(self) -> List[TariffComparison]:
@@ -77,7 +85,11 @@ class ComparisonEngine:
         for tariff in available_tariffs:
             if tariff == account_info.current_tariff:
                 continue
-            comparison = self._compare_tariff(tariff, account_info)
+            try:
+                comparison = self._compare_tariff(tariff, account_info)
+            except Exception as e:
+                logger.warning(f"Error finding prices for tariff: {tariff.id}. {e}")
+                comparison = TariffComparison(tariff=tariff, cost_breakdown=None, error=str(e))
             alternative_comparisons.append(comparison)
 
         logger.debug(f"Tariff comparison results - {alternative_comparisons}")

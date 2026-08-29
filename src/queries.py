@@ -55,14 +55,56 @@ account_query = """query{{
             direction
         }}
         tariff {{
+            __typename
             ... on HalfHourlyTariff {{
                 id
+                displayName
+                fullName
                 productCode
                 tariffCode
-                productCode
                 standingCharge
-                }}
             }}
+            ... on StandardTariff {{
+                id
+                displayName
+                fullName
+                productCode
+                tariffCode
+                standingCharge
+            }}
+            ... on DayNightTariff {{
+                id
+                displayName
+                fullName
+                productCode
+                tariffCode
+                standingCharge
+            }}
+            ... on ThreeRateTariff {{
+                id
+                displayName
+                fullName
+                productCode
+                tariffCode
+                standingCharge
+            }}
+            ... on FourRateEvTariff {{
+                id
+                displayName
+                fullName
+                productCode
+                tariffCode
+                standingCharge
+            }}
+            ... on PrepayTariff {{
+                id
+                displayName
+                fullName
+                productCode
+                tariffCode
+                standingCharge
+            }}
+        }}
         }}
     }}
 }}"""
