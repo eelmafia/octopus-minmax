@@ -10,6 +10,7 @@ from tariff import Tariff, TARIFFS
 from query_service import QueryService
 from comparison_engine import ComparisonEngine, ComparisonResult
 from notification_service import NotificationService
+from chart import create_tariff_comparison_chart
 import logging
 logger = logging.getLogger('octobot.bot_orchestrator')
 
@@ -125,6 +126,14 @@ class BotOrchestrator:
 
         summary = self._format_comparison_summary(results)
         ns.send_notification(message=summary)
+        if config.SEND_COMPARISON_CHART:
+            try:
+                cost_chart = create_tariff_comparison_chart(results)
+            except Exception as e:
+                logger.warning(f"Failed to create comparison chart: {e}")
+                cost_chart = None
+            if cost_chart:
+                ns.send_notification(message="", image_path=cost_chart, batchable=False)
 
         if results.should_switch:
             switch_message = f"Initiating Switch to {results.cheapest_tariff.display_name}"

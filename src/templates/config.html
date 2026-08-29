@@ -98,6 +98,11 @@
                            class="w-5 h-5 bg-gray-900 border border-gray-600 rounded">
                     <label class="ml-3 text-gray-300" for="batch_notifications">Batch Notifications</label>
                 </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="send_comparison_chart" name="send_comparison_chart" {% if config.send_comparison_chart %}checked{% endif %}
+                           class="w-5 h-5 bg-gray-900 border border-gray-600 rounded">
+                    <label class="ml-3 text-gray-300" for="send_comparison_chart">Send comparison chart</label>
+                </div>
             </div>
         </div>
 

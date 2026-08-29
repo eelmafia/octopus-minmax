@@ -42,6 +42,12 @@ def setup_logging():
     logger.addHandler(file_handler)
     logger.addHandler(console_handler)
 
+    apprise_logger = logging.getLogger('apprise')
+    apprise_logger.setLevel(logging.INFO)
+    if not apprise_logger.handlers:
+        apprise_logger.addHandler(file_handler)
+        apprise_logger.addHandler(console_handler)
+
     return logger
 
 logger = setup_logging()

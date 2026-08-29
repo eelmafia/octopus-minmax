@@ -31,6 +31,7 @@ options:
   TARIFFS: "agile,go,flexible"
   TZ: "Europe/London"
   BATCH_NOTIFICATIONS: false
+  SEND_COMPARISON_CHART: true
   WEB_USERNAME: "admin"
   WEB_PASSWORD: "admin"
 schema:
@@ -44,5 +45,6 @@ schema:
   TARIFFS: str
   TZ: str
   BATCH_NOTIFICATIONS: bool
+  SEND_COMPARISON_CHART: bool
   WEB_USERNAME: str
   WEB_PASSWORD: password

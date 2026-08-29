@@ -30,3 +30,6 @@ configuration:
   BATCH_NOTIFICATIONS:
     name: Batch Notifications
     description: An optional flag to send messages in one batch rather than individually
+  SEND_COMPARISON_CHART:
+    name: Send Comparison Chart
+    description: Attach a stacked standing-charge vs usage chart to the daily notification. Turn off to send text only.

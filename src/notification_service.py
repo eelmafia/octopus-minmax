@@ -2,6 +2,7 @@ from apprise import Apprise
 from datetime import datetime
 from typing import List, Optional
 import logging
+import os
 
 import config
 
@@ -15,6 +16,7 @@ class NotificationService:
         self.batch_notifications: List[str] = []
         self.batch_enabled = batch_enabled
         self._apprise: Optional[Apprise] = None
+        self._batch_image_path: Optional[str] = None
 
     def _refresh_from_config(self) -> None:
         if self.notification_urls != config.NOTIFICATION_URLS:
@@ -32,7 +34,7 @@ class NotificationService:
 
         return self._apprise
 
-    def send_notification(self, message:str, title: str = "", is_error: bool = False, batchable: bool = True) -> bool:
+    def send_notification(self, message:str, title: str = "", is_error: bool = False, batchable: bool = True, image_path: Optional[str] = None) -> bool:
         """Sends a notification using Apprise.
 
         Args:
@@ -40,6 +42,7 @@ class NotificationService:
             title (str, optional): The title of the notification.
             is_error (bool, optional): Whether the message is a stack trace. Defaults to False.
             batchable (bool, optional): Whether the message can be batched.
+            image_path (str, optional): Path to an image to attach.
         """
         self._refresh_from_config()
         apprise = self._get_apprise()
@@ -55,6 +58,8 @@ class NotificationService:
 
         if self.batch_enabled and batchable:
             self.batch_notifications.append(message)
+            if image_path:
+                self._batch_image_path = image_path
             logger.debug(f"Added message to batch. Current batch size: {len(self.batch_notifications)}")
             return True
         else:
@@ -62,10 +67,28 @@ class NotificationService:
                 logger.warning("No notification services configured. Check config.NOTIFICATION_URLS.")
                 logger.info(message)
                 return False
-            success = apprise.notify(body=message, title=title)
-            logger.info(f"Successfuly sent notification: {message}")
-            if not success:
-                logger.error(f"Failed to send notification: {title}")
+            notify_kwargs = {"body": message, "title": title}
+            if image_path:
+                abs_path = os.path.abspath(image_path)
+                if not os.path.isfile(abs_path):
+                    logger.error(f"Cannot attach missing file: {abs_path}")
+                else:
+                    # file:// URLs are more reliable with Apprise than raw paths.
+                    notify_kwargs["attach"] = f"file://{abs_path}"
+            success = apprise.notify(**notify_kwargs)
+            if success:
+                if message:
+                    logger.info(f"Sent notification: {message}")
+                else:
+                    logger.info("Sent notification attachment")
+            else:
+                logger.error(f"Failed to send notification (title={title!r}, attach={bool(image_path)})")
+                if image_path and message:
+                    logger.info("Retrying notification without attachment")
+                    retry_kwargs = {"body": message, "title": title}
+                    success = apprise.notify(**retry_kwargs)
+                    if success:
+                        logger.info(f"Sent notification without attachment: {message}")
             return success
 
     def send_batch_notification(self) -> bool:
@@ -84,10 +107,18 @@ class NotificationService:
             logger.warning("Cannot send batch - no notification services configured. Check config.NOTIFICATION_URLS.")
             logger.info(body)
             return False
-        success = apprise.notify(body=body, title=title)
+        notify_kwargs = {"body": body, "title": title}
+        if self._batch_image_path:
+            abs_path = os.path.abspath(self._batch_image_path)
+            if os.path.isfile(abs_path):
+                notify_kwargs["attach"] = f"file://{abs_path}"
+            else:
+                logger.error(f"Cannot attach missing file: {abs_path}")
+        success = apprise.notify(**notify_kwargs)
         if success:
             logger.info(f"Sent batch notification with {len(self.batch_notifications)} messages")
             self.batch_notifications.clear()
+            self._batch_image_path = None
         else:
             logger.error("Failed to send batch notification")
 

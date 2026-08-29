@@ -19,6 +19,7 @@ def get_config():
             'dry_run': config.DRY_RUN,
             'notification_urls': config.NOTIFICATION_URLS,
             'batch_notifications': config.BATCH_NOTIFICATIONS,
+            'send_comparison_chart': config.SEND_COMPARISON_CHART,
         }
 
 
@@ -55,6 +56,10 @@ def update_config(new_values):
         else:
             # Checkbox not checked means False
             config.BATCH_NOTIFICATIONS = False
+        if 'send_comparison_chart' in new_values:
+            config.SEND_COMPARISON_CHART = str(new_values['send_comparison_chart']).lower() in ['true', '1', 'yes', 'on']
+        else:
+            config.SEND_COMPARISON_CHART = False
 
         if config.ONE_OFF_RUN and not previous_one_off:
             config.ONE_OFF_EXECUTED = False

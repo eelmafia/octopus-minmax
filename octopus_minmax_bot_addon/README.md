@@ -64,6 +64,7 @@ docker run -d \
   -e TARIFFS=go,agile,flexible \
   -e TZ=Europe/London \
   -e BATCH_NOTIFICATIONS=false \
+  -e SEND_COMPARISON_CHART=true \
   -e WEB_USERNAME="<whatever_you_want>" \
   -e WEB_PASSWORD="<whatever_you_want>" \
   eelmafia/octopus-minmax-bot
@@ -84,6 +85,7 @@ Note : Remove the --restart unless line if you set the ONE_OFF variable or it wi
 | `ONE_OFF`                   | (Optional) A flag for you to simply trigger an immediate execution instead of starting scheduling.                                                                                                                      |
 | `DRY_RUN`                   | (Optional) A flag to compare but not switch tariffs.                                                                                                                                                                    |
 | `BATCH_NOTIFICATIONS`       | (Optional) A flag to send messages in one batch rather than individually.                                                                                                                                               |
+| `SEND_COMPARISON_CHART`     | (Optional) Attach a stacked standing-charge vs usage chart to the daily notification. Default is `true`.                                                                                                                |
 | `WEB_USERNAME`              | (Optional) Defaults to `admin`. Auth for the web dashboard.
 | `WEB_PASSWORD`              | (Optional) Defaults to `admin`. Auth for the web dashboard.
 | `WEB_PORT`                  | (Optional) Defaults to `5050`.
